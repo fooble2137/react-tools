@@ -18,7 +18,7 @@ export const navbarItems: {
     label: "QR Code",
     icon: QrCodeIcon,
     href: "/qr-code",
-    color: "#39A95C",
+    color: "#39a95c",
   },
   {
     label: "Barcode",
@@ -30,25 +30,25 @@ export const navbarItems: {
     label: "Gradient",
     icon: GradientIcon,
     href: "/gradient",
-    color: "#39A95C",
+    color: "#8e3dff",
   },
   {
     label: "Password",
     icon: PasswordIcon,
     href: "/password",
-    color: "#39A95C",
+    color: "#109bff",
   },
   {
     label: "Timezone",
     icon: ClockIcon,
     href: "/timezone",
-    color: "#39A95C",
+    color: "#0f766e",
   },
   {
     label: "Roman",
     icon: HashIcon,
     href: "/roman-numerals",
-    color: "#39A95C",
+    color: "#b83e40",
   },
 ];
 

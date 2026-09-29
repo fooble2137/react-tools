@@ -20,6 +20,22 @@
   --page-primary: #9b235b;
 }
 
+.gradient {
+  --page-primary: #8e3dff;
+}
+
+.password {
+  --page-primary: #109bff;
+}
+
+.timezone {
+  --page-primary: #0f766e;
+}
+
+.roman {
+  --page-primary: #b83e40;
+}
+
 @theme inline {
   --color-page-primary: var(--page-primary);
 }
