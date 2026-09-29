@@ -24,7 +24,7 @@ export const navbarItems: {
     label: "Barcode",
     icon: BarcodeIcon,
     href: "/barcode",
-    color: "#39A95C",
+    color: "#9b235b",
   },
   {
     label: "Gradient",

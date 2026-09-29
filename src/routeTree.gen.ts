@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BarcodeRouteImport } from './routes/barcode'
 import { Route as QrCodeRouteImport } from './routes/qr-code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BarcodeRoute = BarcodeRouteImport.update({
+  id: '/barcode',
+  path: '/barcode',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QrCodeRoute = QrCodeRouteImport.update({
@@ -25,27 +31,31 @@ const QrCodeRoute = QrCodeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/barcode': typeof BarcodeRoute
   '/qr-code': typeof QrCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/barcode': typeof BarcodeRoute
   '/qr-code': typeof QrCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/barcode': typeof BarcodeRoute
   '/qr-code': typeof QrCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/qr-code'
+  fullPaths: '/' | '/barcode' | '/qr-code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/qr-code'
-  id: '__root__' | '/' | '/qr-code'
+  to: '/' | '/barcode' | '/qr-code'
+  id: '__root__' | '/' | '/barcode' | '/qr-code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BarcodeRoute: typeof BarcodeRoute
   QrCodeRoute: typeof QrCodeRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/barcode': {
+      id: '/barcode'
+      path: '/barcode'
+      fullPath: '/barcode'
+      preLoaderRoute: typeof BarcodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qr-code': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BarcodeRoute: BarcodeRoute,
   QrCodeRoute: QrCodeRoute,
 }
 export const routeTree = rootRouteImport
