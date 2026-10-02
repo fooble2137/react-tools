@@ -45,7 +45,11 @@ const PresetsDropdown = ({ changeValue }: PresetsDropdownProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <InputGroupButton variant="ghost" aria-label="More" size="icon-xs">
+            <InputGroupButton
+              variant="ghost"
+              aria-label="Presets"
+              size="icon-xs"
+            >
               <PaletteIcon />
             </InputGroupButton>
           }
