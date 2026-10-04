@@ -298,7 +298,7 @@ function RouteComponent() {
                       `${format(date, "yyyy-MM-dd")}T${time}`,
                     );
 
-                    if (isValid) {
+                    if (isValid && fromTimezone && toTimezone) {
                       const fromDateTime = new Date(
                         dateTime.toLocaleString("en-US", {
                           timeZone: labelToTimezone(fromTimezone) || "UTC",
@@ -345,7 +345,35 @@ function RouteComponent() {
                       );
                     }
 
-                    return <p></p>;
+                    return (
+                      <>
+                        <p className="text-center font-medium font-mono">
+                          {format(new Date(), "EEEE, MMMM dd, yyyy 'at' HH:mm")}
+                        </p>
+
+                        <FieldSeparator />
+
+                        <div className="flex flex-col items-center text-sm text-muted-foreground gap-1">
+                          <span>
+                            {format(
+                              new Date(),
+                              "EEEE, MMMM dd, yyyy 'at' HH:mm",
+                            )}{" "}
+                            (UTC)
+                          </span>
+
+                          <ArrowDownIcon className="size-3" />
+
+                          <span>
+                            {format(
+                              new Date(),
+                              "EEEE, MMMM dd, yyyy 'at' HH:mm",
+                            )}{" "}
+                            (UTC)
+                          </span>
+                        </div>
+                      </>
+                    );
                   }}
                 </form.Subscribe>
               </FieldSet>
