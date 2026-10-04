@@ -1,8 +1,17 @@
 import { getNavbarItemByHref, navbarItems } from "#/data/navbar";
 import { cn } from "#/lib/cn";
 import { CompassIcon, XCircleIcon } from "@phosphor-icons/react";
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "./ui/navigation-menu";
 
 const Navbar = () => {
   const pathname = useLocation({
@@ -13,6 +22,25 @@ const Navbar = () => {
 
   return (
     <>
+      {/*<div className="hidden md:flex bg-background p-2 items-center justify-center shadow-md">
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Test</NavigationMenuTrigger>
+
+              <NavigationMenuContent>
+                <NavigationMenuLink
+                  render={<Link to="/qr-code" />}
+                  className={navigationMenuTriggerStyle()}
+                >
+                  Test1
+                </NavigationMenuLink>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>*/}
+
       <nav className="bg-gray-100 p-2 md:flex hidden gap-x-4 items-center justify-center shadow-md">
         {navbarItems.map((navbarItem) => (
           <NavbarItem
@@ -76,8 +104,8 @@ const NavbarItem = ({
   className,
 }: NavbarItemProps) => {
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className={cn(
         "flex items-center justify-center gap-x-2 p-2 rounded-md transition-colors duration-200 text-sm",
         isActive ? "text-white shadow-sm" : "hover:bg-gray-200 text-gray-900",
@@ -93,7 +121,7 @@ const NavbarItem = ({
         aria-hidden="true"
       />
       {label}
-    </a>
+    </Link>
   );
 };
 
