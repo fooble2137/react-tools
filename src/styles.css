@@ -84,10 +84,6 @@
   --primary: #39a95c;
 }
 
-.barcode {
-  --primary: #9b235b;
-}
-
 .gradient {
   --primary: #8e3dff;
 }
@@ -100,7 +96,7 @@
   --primary: #0f766e;
 }
 
-.roman {
+.file {
   --primary: #b83e40;
 }
 

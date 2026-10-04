@@ -10,11 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BarcodeRouteImport } from './routes/barcode'
+import { Route as FileConverterRouteImport } from './routes/file-converter'
 import { Route as GradientRouteImport } from './routes/gradient'
 import { Route as PasswordRouteImport } from './routes/password'
 import { Route as QrCodeRouteImport } from './routes/qr-code'
-import { Route as RomanNumeralsRouteImport } from './routes/roman-numerals'
 import { Route as TimezoneRouteImport } from './routes/timezone'
 
 const IndexRoute = IndexRouteImport.update({
@@ -22,9 +21,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BarcodeRoute = BarcodeRouteImport.update({
-  id: '/barcode',
-  path: '/barcode',
+const FileConverterRoute = FileConverterRouteImport.update({
+  id: '/file-converter',
+  path: '/file-converter',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GradientRoute = GradientRouteImport.update({
@@ -42,11 +41,6 @@ const QrCodeRoute = QrCodeRouteImport.update({
   path: '/qr-code',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RomanNumeralsRoute = RomanNumeralsRouteImport.update({
-  id: '/roman-numerals',
-  path: '/roman-numerals',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TimezoneRoute = TimezoneRouteImport.update({
   id: '/timezone',
   path: '/timezone',
@@ -55,69 +49,62 @@ const TimezoneRoute = TimezoneRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/barcode': typeof BarcodeRoute
+  '/file-converter': typeof FileConverterRoute
   '/gradient': typeof GradientRoute
   '/password': typeof PasswordRoute
   '/qr-code': typeof QrCodeRoute
-  '/roman-numerals': typeof RomanNumeralsRoute
   '/timezone': typeof TimezoneRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/barcode': typeof BarcodeRoute
+  '/file-converter': typeof FileConverterRoute
   '/gradient': typeof GradientRoute
   '/password': typeof PasswordRoute
   '/qr-code': typeof QrCodeRoute
-  '/roman-numerals': typeof RomanNumeralsRoute
   '/timezone': typeof TimezoneRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/barcode': typeof BarcodeRoute
+  '/file-converter': typeof FileConverterRoute
   '/gradient': typeof GradientRoute
   '/password': typeof PasswordRoute
   '/qr-code': typeof QrCodeRoute
-  '/roman-numerals': typeof RomanNumeralsRoute
   '/timezone': typeof TimezoneRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/barcode'
+    | '/file-converter'
     | '/gradient'
     | '/password'
     | '/qr-code'
-    | '/roman-numerals'
     | '/timezone'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/barcode'
+    | '/file-converter'
     | '/gradient'
     | '/password'
     | '/qr-code'
-    | '/roman-numerals'
     | '/timezone'
   id:
     | '__root__'
     | '/'
-    | '/barcode'
+    | '/file-converter'
     | '/gradient'
     | '/password'
     | '/qr-code'
-    | '/roman-numerals'
     | '/timezone'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BarcodeRoute: typeof BarcodeRoute
+  FileConverterRoute: typeof FileConverterRoute
   GradientRoute: typeof GradientRoute
   PasswordRoute: typeof PasswordRoute
   QrCodeRoute: typeof QrCodeRoute
-  RomanNumeralsRoute: typeof RomanNumeralsRoute
   TimezoneRoute: typeof TimezoneRoute
 }
 
@@ -130,11 +117,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/barcode': {
-      id: '/barcode'
-      path: '/barcode'
-      fullPath: '/barcode'
-      preLoaderRoute: typeof BarcodeRouteImport
+    '/file-converter': {
+      id: '/file-converter'
+      path: '/file-converter'
+      fullPath: '/file-converter'
+      preLoaderRoute: typeof FileConverterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gradient': {
@@ -158,13 +145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QrCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/roman-numerals': {
-      id: '/roman-numerals'
-      path: '/roman-numerals'
-      fullPath: '/roman-numerals'
-      preLoaderRoute: typeof RomanNumeralsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/timezone': {
       id: '/timezone'
       path: '/timezone'
@@ -177,11 +157,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BarcodeRoute: BarcodeRoute,
+  FileConverterRoute: FileConverterRoute,
   GradientRoute: GradientRoute,
   PasswordRoute: PasswordRoute,
   QrCodeRoute: QrCodeRoute,
-  RomanNumeralsRoute: RomanNumeralsRoute,
   TimezoneRoute: TimezoneRoute,
 }
 export const routeTree = rootRouteImport

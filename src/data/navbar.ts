@@ -1,6 +1,7 @@
 import {
   BarcodeIcon,
   ClockIcon,
+  FileIcon,
   GradientIcon,
   HashIcon,
   PasswordIcon,
@@ -13,18 +14,13 @@ export const navbarItems: {
   icon: Icon;
   href: string;
   color: string;
+  disabled?: boolean;
 }[] = [
   {
     label: "QR Code",
     icon: QrCodeIcon,
     href: "/qr-code",
     color: "#39a95c",
-  },
-  {
-    label: "Barcode",
-    icon: BarcodeIcon,
-    href: "/barcode",
-    color: "#9b235b",
   },
   {
     label: "Gradient",
@@ -45,10 +41,11 @@ export const navbarItems: {
     color: "#0f766e",
   },
   {
-    label: "Roman",
-    icon: HashIcon,
-    href: "/roman-numerals",
+    label: "File converter",
+    icon: FileIcon,
+    href: "/file-converter",
     color: "#b83e40",
+    disabled: true,
   },
 ];
 

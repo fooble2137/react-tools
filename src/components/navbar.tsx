@@ -45,6 +45,7 @@ const Navbar = () => {
         {navbarItems.map((navbarItem) => (
           <NavbarItem
             key={navbarItem.href}
+            disabled={navbarItem.disabled}
             isActive={navbarItem.href === pathname}
             {...navbarItem}
           />
@@ -75,6 +76,7 @@ const Navbar = () => {
           {navbarItems.map((navbarItem) => (
             <NavbarItem
               key={navbarItem.href}
+              disabled={navbarItem.disabled}
               isActive={navbarItem.href === pathname}
               className="w-full"
               {...navbarItem}
@@ -91,6 +93,7 @@ type NavbarItemProps = {
   icon: React.ElementType;
   href: string;
   color: string;
+  disabled?: boolean;
   isActive?: boolean;
   className?: string;
 };
@@ -100,6 +103,7 @@ const NavbarItem = ({
   icon: Icon,
   href,
   color,
+  disabled,
   isActive,
   className,
 }: NavbarItemProps) => {
@@ -108,6 +112,8 @@ const NavbarItem = ({
       to={href}
       className={cn(
         "flex items-center justify-center gap-x-2 p-2 rounded-md transition-colors duration-200 text-sm",
+        disabled &&
+          "opacity-50 cursor-not-allowed pointer-events-none line-through",
         isActive ? "text-white shadow-sm" : "hover:bg-gray-200 text-gray-900",
         className,
       )}
