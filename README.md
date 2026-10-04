@@ -1,183 +1,68 @@
-Welcome to your new TanStack Start app!
+# Tools
 
-# Getting Started
+![MIT License](https://img.shields.io/badge/License-MIT-a6da95?style=for-the-badge&labelColor=363a4f)
+![Version too-2.0](https://img.shields.io/badge/Version-too--2.0-f5a97f?style=for-the-badge&labelColor=363a4f)
 
-To run this application:
+A lightweight collection of browser-based utilities designed for generating and converting everyday digital assets. Built with React, Vite and TanStack Router, each tool is designed to run directly in the browser, eliminating the need for a backend.
 
-```bash
-npm install
-npm run dev
-```
+## Overview
 
-# Building For Production
+The app currently includes these tools:
 
-To build this application for production:
+- QR Code Generator
+- Gradient Generator
+- Password Generator
+- Timezone Converter
+- *Planned: File converter*
 
-```bash
-npm run build
-```
+## Tool details
 
-## Styling
+### QR Code generator
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+Generate QR Codes for URLs, text and other custom values.
 
-### Removing Tailwind CSS
+- generate QR Codes from any text or URL
+- adjust the size, colour and background appearance
+- customise module styles and finder patterns
+- add a logo or image overlay to create branded QR codes
+- download the final QR code as a PNG image
+- use built-in presets for quick setup
 
-If you prefer not to use Tailwind CSS:
+### Gradient generator
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
+Create CSS-ready gradients for backgrounds, cards, landing pages and UI themes.
 
+- choose a direction or custom angle
+- add multiple colour stops and adjust their positions
+- edit each colour manually
+- preview the generated gradient in real time
+- copy the resulting CSS code for immediate use in a project
 
+### Password generator
 
-## Routing
+Generate secure passwords according to your chosen rules.
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+- set the total password length
+- include or exclude lowercase letters, uppercase letters, numbers, symbols and spaces
+- minimise duplicate characters for more varied results
+- copy passwords to the clipboard
+- review a strength score that estimates how resistant the password is to common attacks
 
-### Adding A Route
+### Timezone Converter
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
+Convert a given date and time to different time zones.
 
-TanStack will automatically generate the content of the route file for you.
+- select a date and time to convert
+- choose both the source and destination time zones
+- search a large list of valid time zones
+- use the converter for travel, meetings, and scheduling across regions
 
-Now that you have two routes you can use a `Link` component to navigate between them.
+## Project structure
 
-### Adding Links
+- `src/routes`: screens for each tool
+- `src/lib`: utility logic for QR, gradient, password, and timezone features
+- `src/components`: reusable UI building blocks
 
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+## Notes
 
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+This project has been designed to be simple and client-side only. This makes it easy to add new utilities in the future without introducing unnecessary complexity to the backend.
