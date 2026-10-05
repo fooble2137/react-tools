@@ -1,9 +1,37 @@
 import { navbarItems } from "#/data/navbar";
+import { generateHeadMeta } from "#/lib/head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: generateHeadMeta({
+      title: "fooble.dev Tools",
+      description: "A lightweight collection of browser-based utilities.",
+      url: "https://tools.fooble.dev",
+      isPublic: false,
+      type: "website",
+      keywords: [
+        "tools",
+        "utilities",
+        "qr code",
+        "gradient",
+        "password",
+        "timezone",
+        "Fooble",
+      ],
+      bgPath: "/fooble/bg.png",
+    }),
+    links: [
+      {
+        rel: "icon",
+        href: "/fooble/icon.ico",
+      },
+    ],
+  }),
+  component: IndexRoute,
+});
 
-function Home() {
+function IndexRoute() {
   const randomNavbarItem =
     navbarItems[Math.floor(Math.random() * navbarItems.length)];
 

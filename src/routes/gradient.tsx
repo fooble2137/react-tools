@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "#/components/ui/select";
 import { randomHexColor } from "#/lib/gradient";
+import { generateHeadMeta } from "#/lib/head";
 import {
   CopyIcon,
   PaletteIcon,
@@ -32,6 +33,23 @@ import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/gradient")({
   head: () => ({
+    meta: generateHeadMeta({
+      title: "Gradient generator - fooble.dev Tools",
+      description:
+        "Create CSS-ready gradients for backgrounds, cards, landing pages and UI themes.",
+      url: "https://tools.fooble.dev/gradient",
+      isPublic: true,
+      type: "website",
+      keywords: [
+        "gradient",
+        "css gradient",
+        "linear gradient",
+        "radial gradient",
+        "gradient generator",
+        "Fooble",
+      ],
+      bgPath: "/gradient/bg.png",
+    }),
     links: [
       {
         rel: "icon",
@@ -39,7 +57,7 @@ export const Route = createFileRoute("/gradient")({
       },
     ],
   }),
-  component: RouteComponent,
+  component: GradientGeneratorRoute,
 });
 
 const directions = [
@@ -81,7 +99,7 @@ const directions = [
   },
 ];
 
-function RouteComponent() {
+function GradientGeneratorRoute() {
   const [direction, setDirection] = useState("to right");
   const [degree, setDegree] = useState(90);
   const [stops, setStops] = useState([

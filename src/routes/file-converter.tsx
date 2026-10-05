@@ -1,7 +1,17 @@
+import { generateHeadMeta } from "#/lib/head";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/file-converter")({
   head: () => ({
+    meta: generateHeadMeta({
+      title: "File converter - fooble.dev Tools",
+      description: "A lightweight collection of browser-based utilities.",
+      url: "https://tools.fooble.dev/file-converter",
+      isPublic: false,
+      type: "website",
+      keywords: ["Fooble"],
+      bgPath: "/file-converter/bg.png",
+    }),
     links: [
       {
         rel: "icon",

@@ -19,6 +19,7 @@ import {
 } from "#/components/ui/progress";
 import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
+import { generateHeadMeta } from "#/lib/head";
 import { calculatePasswordStrength, generatePassword } from "#/lib/password";
 import {
   ArrowClockwiseIcon,
@@ -32,6 +33,15 @@ import z from "zod";
 
 export const Route = createFileRoute("/password")({
   head: () => ({
+    meta: generateHeadMeta({
+      title: "Password generator - fooble.dev Tools",
+      description: "Generate secure passwords according to your chosen rules.",
+      url: "https://tools.fooble.dev/password",
+      isPublic: true,
+      type: "website",
+      keywords: ["password", "generator", "secure", "random", "Fooble"],
+      bgPath: "/password/bg.png",
+    }),
     links: [
       {
         rel: "icon",
@@ -39,7 +49,7 @@ export const Route = createFileRoute("/password")({
       },
     ],
   }),
-  component: RouteComponent,
+  component: PasswordGeneratorRoute,
 });
 
 const formSchema = z.object({
@@ -53,7 +63,7 @@ const formSchema = z.object({
   minimizeDuplicates: z.boolean(),
 });
 
-function RouteComponent() {
+function PasswordGeneratorRoute() {
   const [password, setPassword] = useState(
     generatePassword({
       length: 16,

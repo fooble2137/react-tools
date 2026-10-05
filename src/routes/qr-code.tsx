@@ -3,7 +3,6 @@ import FinderPatternInnerStyleSelect from "#/components/qr/finder-pattern-inner-
 import FinderPatternOuterStyleSelect from "#/components/qr/finder-pattern-outer-style";
 import PresetsDropdown from "#/components/qr/presets-dropdown";
 import { Button } from "#/components/ui/button";
-
 import {
   Field,
   FieldDescription,
@@ -21,6 +20,7 @@ import {
 import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
 import { cn } from "#/lib/cn";
+import { generateHeadMeta } from "#/lib/head";
 import { getDataModulesStyleByValue } from "#/lib/qr";
 import {
   ReactQRCode,
@@ -37,6 +37,21 @@ import z from "zod";
 
 export const Route = createFileRoute("/qr-code")({
   head: () => ({
+    meta: generateHeadMeta({
+      title: "QR Code generator - fooble.dev Tools",
+      description: "Generate QR Codes for URLs, text and other custom values.",
+      url: "https://tools.fooble.dev/qr-code",
+      isPublic: true,
+      type: "website",
+      keywords: [
+        "qr code",
+        "qr code generator",
+        "qr code generator online",
+        "qr code generator free",
+        "Fooble",
+      ],
+      bgPath: "/qr/bg.png",
+    }),
     links: [
       {
         rel: "icon",
@@ -44,7 +59,7 @@ export const Route = createFileRoute("/qr-code")({
       },
     ],
   }),
-  component: RouteComponent,
+  component: QRCodeRoute,
 });
 
 const formSchema = z.object({
@@ -73,7 +88,7 @@ const formSchema = z.object({
   imageOpacity: z.number().min(0).max(1),
 });
 
-function RouteComponent() {
+function QRCodeRoute() {
   const form = useForm({
     defaultValues: {
       value: "https://fooble.dev",

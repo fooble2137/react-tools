@@ -38,9 +38,19 @@ import {
   ComboboxList,
 } from "#/components/ui/combobox";
 import { labelToTimezone, timeZoneLabels } from "#/lib/timezone";
+import { generateHeadMeta } from "#/lib/head";
 
 export const Route = createFileRoute("/timezone")({
   head: () => ({
+    meta: generateHeadMeta({
+      title: "Timezone converter - fooble.dev Tools",
+      description: "Convert a given date and time to different time zones.",
+      url: "https://tools.fooble.dev/timezone",
+      isPublic: true,
+      type: "website",
+      keywords: ["timezone", "converter", "time", "date", "Fooble"],
+      bgPath: "/timezone/bg.png",
+    }),
     links: [
       {
         rel: "icon",
@@ -48,7 +58,7 @@ export const Route = createFileRoute("/timezone")({
       },
     ],
   }),
-  component: RouteComponent,
+  component: TimezoneConverterRoute,
 });
 
 const formSchema = z.object({
@@ -74,7 +84,7 @@ const formSchema = z.object({
     }),
 });
 
-function RouteComponent() {
+function TimezoneConverterRoute() {
   const form = useForm({
     defaultValues: {
       date: new Date(),

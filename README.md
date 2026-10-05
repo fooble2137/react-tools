@@ -13,7 +13,7 @@ The app currently includes these tools:
 - Gradient Generator
 - Password Generator
 - Timezone Converter
-- *Planned: File converter*
+- _Planned: File converter_
 
 ## Tool details
 
@@ -48,7 +48,7 @@ Generate secure passwords according to your chosen rules.
 - copy passwords to the clipboard
 - review a strength score that estimates how resistant the password is to common attacks
 
-### Timezone Converter
+### Timezone converter
 
 Convert a given date and time to different time zones.
 
