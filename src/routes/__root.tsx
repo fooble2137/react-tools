@@ -28,11 +28,11 @@ export const Route = createRootRoute({
       },
       {
         name: "twitter:image",
-        content: "/fooble/bg.png",
+        content: "/assets/fooble/bg.png",
       },
       {
         name: "og:image",
-        content: "/fooble/bg.png",
+        content: "/assets/fooble/bg.png",
       },
       {
         name: "apple-mobile-web-app-capable",
@@ -50,7 +50,7 @@ export const Route = createRootRoute({
     links: [
       {
         rel: "icon",
-        href: "/fooble/icon.ico",
+        href: "/assets/fooble/icon.ico",
       },
     ],
   }),

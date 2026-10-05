@@ -3,15 +3,6 @@ import { cn } from "#/lib/cn";
 import { CompassIcon, XCircleIcon } from "@phosphor-icons/react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "./ui/navigation-menu";
 
 const Navbar = () => {
   const pathname = useLocation({
@@ -77,7 +68,7 @@ const Navbar = () => {
             <NavbarItem
               key={navbarItem.href}
               disabled={navbarItem.disabled}
-              isActive={navbarItem.href === pathname}
+              isActive={pathname.startsWith(navbarItem.href)}
               className="w-full"
               {...navbarItem}
             />

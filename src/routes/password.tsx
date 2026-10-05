@@ -40,12 +40,12 @@ export const Route = createFileRoute("/password")({
       isPublic: true,
       type: "website",
       keywords: ["password", "generator", "secure", "random", "Fooble"],
-      bgPath: "/password/bg.png",
+      bgPath: "/assets/password/bg.png",
     }),
     links: [
       {
         rel: "icon",
-        href: "/password/icon.ico",
+        href: "/assets/password/icon.ico",
       },
     ],
   }),
@@ -109,7 +109,7 @@ function PasswordGeneratorRoute() {
       <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden password">
         <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
           <img
-            src="/password/text.png"
+            src="/assets/password/text.png"
             className="h-12 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
             alt="Password generator"

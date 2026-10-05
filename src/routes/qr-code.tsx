@@ -50,12 +50,12 @@ export const Route = createFileRoute("/qr-code")({
         "qr code generator free",
         "Fooble",
       ],
-      bgPath: "/qr/bg.png",
+      bgPath: "/assets/qr/bg.png",
     }),
     links: [
       {
         rel: "icon",
-        href: "/qr/icon.ico",
+        href: "/assets/qr/icon.ico",
       },
     ],
   }),
@@ -146,7 +146,7 @@ function QRCodeRoute() {
       <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden qr">
         <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
           <img
-            src="/qr/text.png"
+            src="/assets/qr/text.png"
             className="h-12 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
           />

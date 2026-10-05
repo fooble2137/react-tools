@@ -48,12 +48,12 @@ export const Route = createFileRoute("/gradient")({
         "gradient generator",
         "Fooble",
       ],
-      bgPath: "/gradient/bg.png",
+      bgPath: "/assets/gradient/bg.png",
     }),
     links: [
       {
         rel: "icon",
-        href: "/gradient/icon.ico",
+        href: "/assets/gradient/icon.ico",
       },
     ],
   }),
@@ -157,7 +157,7 @@ function GradientGeneratorRoute() {
       <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden gradient">
         <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
           <img
-            src="/gradient/text.png"
+            src="/assets/gradient/text.png"
             className="h-12 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
           />

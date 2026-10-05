@@ -19,12 +19,12 @@ export const Route = createFileRoute("/")({
         "timezone",
         "Fooble",
       ],
-      bgPath: "/fooble/bg.png",
+      bgPath: "/assets/fooble/bg.png",
     }),
     links: [
       {
         rel: "icon",
-        href: "/fooble/icon.ico",
+        href: "/assets/fooble/icon.ico",
       },
     ],
   }),
@@ -48,33 +48,33 @@ function IndexRoute() {
           to="/qr-code"
           className="shadow-md rounded-md hover:scale-105 transition-transform"
         >
-          <img src="/qr/bg.png" alt="QR Code generator" />
+          <img src="/assets/qr/bg.png" alt="QR Code generator" />
         </Link>
 
         <Link
           to="/gradient"
           className="shadow-md rounded-md hover:scale-105 transition-transform"
         >
-          <img src="/gradient/bg.png" alt="Gradient generator" />
+          <img src="/assets/gradient/bg.png" alt="Gradient generator" />
         </Link>
 
         <Link
           to="/password"
           className="shadow-md rounded-md hover:scale-105 transition-transform"
         >
-          <img src="/password/bg.png" alt="Password generator" />
+          <img src="/assets/password/bg.png" alt="Password generator" />
         </Link>
 
         <Link
           to="/timezone"
           className="shadow-md rounded-md hover:scale-105 transition-transform"
         >
-          <img src="/timezone/bg.png" alt="Timezone converter" />
+          <img src="/assets/timezone/bg.png" alt="Timezone converter" />
         </Link>
 
         <div className="shadow-md rounded-md relative cursor-not-allowed">
           <img
-            src="/file-converter/bg.png"
+            src="/assets/file-converter/bg.png"
             alt="File converter"
             className="opacity-75"
           />
