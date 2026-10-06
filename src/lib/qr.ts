@@ -1,3 +1,12 @@
+import {
+  EnvelopeIcon,
+  MapPinIcon,
+  PhoneIcon,
+  TextAaIcon,
+  WifiHighIcon,
+  type Icon,
+} from "@phosphor-icons/react";
+
 export const dataModuelsStyles: {
   value: string;
   label: string;
@@ -222,5 +231,37 @@ export const finderPatternInnerStyles: {
   {
     value: "star",
     label: "Star",
+  },
+];
+
+export const presets: {
+  name: string;
+  label: string;
+  defaultValue: string;
+}[] = [
+  {
+    name: "text",
+    label: "URL & Text",
+    defaultValue: "https://fooble.dev",
+  },
+  {
+    name: "phone",
+    label: "Phone",
+    defaultValue: "tel:+493023125000",
+  },
+  {
+    name: "email",
+    label: "Email",
+    defaultValue: "mailto:contact@fooble.dev",
+  },
+  {
+    name: "wifi",
+    label: "Wi-Fi",
+    defaultValue: "WIFI:T:WPA;S:MyNetwork;P:mypassword;;",
+  },
+  {
+    name: "location",
+    label: "Location",
+    defaultValue: "geo:37.334606,-122.009102",
   },
 ];

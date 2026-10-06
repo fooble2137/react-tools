@@ -1,4 +1,3 @@
-import { navbarItems } from "#/data/navbar";
 import { generateHeadMeta } from "#/lib/head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
@@ -32,17 +31,8 @@ export const Route = createFileRoute("/")({
 });
 
 function IndexRoute() {
-  const randomNavbarItem =
-    navbarItems[Math.floor(Math.random() * navbarItems.length)];
-
   return (
     <>
-      <style>
-        {`body {
-          background-color: ${randomNavbarItem.color};
-        }`}
-      </style>
-
       <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
         <Link
           to="/qr-code"

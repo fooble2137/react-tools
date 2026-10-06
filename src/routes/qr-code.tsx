@@ -1,27 +1,7 @@
-import DataModulesStyleSelect from "#/components/qr/data-modules-style";
-import FinderPatternInnerStyleSelect from "#/components/qr/finder-pattern-inner-style";
-import FinderPatternOuterStyleSelect from "#/components/qr/finder-pattern-outer-style";
-import PresetsDropdown from "#/components/qr/presets-dropdown";
 import { Button } from "#/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldSet,
-} from "#/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "#/components/ui/input-group";
-import { Slider } from "#/components/ui/slider";
-import { Switch } from "#/components/ui/switch";
+import { FieldGroup } from "#/components/ui/field";
 import { cn } from "#/lib/cn";
 import { generateHeadMeta } from "#/lib/head";
-import { getDataModulesStyleByValue } from "#/lib/qr";
 import {
   ReactQRCode,
   type DataModulesStyle,
@@ -29,11 +9,34 @@ import {
   type FinderPatternOuterStyle,
   type ReactQRCodeRef,
 } from "@lglab/react-qr-code";
-import { DownloadIcon, ImageIcon, QrCodeIcon } from "@phosphor-icons/react";
+import { CopyIcon, DownloadIcon } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef } from "react";
 import z from "zod";
+import { Separator } from "#/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "#/components/ui/breadcrumb";
+import { SidebarTrigger } from "#/components/ui/sidebar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "#/components/ui/accordion";
+import BackgroundSettings from "#/components/qr/background";
+import DataModulesSettings from "#/components/qr/data-modules";
+import FinderPatternsSettings from "#/components/qr/finder-patterns";
+import { finderPatternInnerStyles } from "#/lib/qr";
+import ImageSettings from "#/components/qr/image";
+import GeneralSettings from "#/components/qr/general";
+import { ButtonGroup } from "#/components/ui/button-group";
 
 export const Route = createFileRoute("/qr-code")({
   head: () => ({
@@ -66,10 +69,12 @@ const formSchema = z.object({
   value: z.string().min(1, "To generate a QR Code, please enter a value!"),
   size: z.number().min(16).max(256),
 
+  bgTransparent: z.boolean(),
   bgColor: z.string(),
 
   dataModulesColor: z.string(),
   dataModulesStyle: z.string(),
+  dataModulesRandomSize: z.boolean(),
   dataModulesSize: z.number().min(0.75).max(1),
   dataModulesLineWidth: z.number().min(0.25).max(1),
 
@@ -79,13 +84,10 @@ const formSchema = z.object({
   finderPatternsInnerColor: z.string(),
   finderPatternsInnerStyle: z.string(),
 
+  showImage: z.boolean(),
   imageSrc: z.string(),
   imageWidth: z.number().min(8).max(64),
   imageHeight: z.number().min(8).max(64),
-  imageExcavate: z.boolean(),
-  imageX: z.number().min(1).max(256),
-  imageY: z.number().min(1).max(256),
-  imageOpacity: z.number().min(0).max(1),
 });
 
 function QRCodeRoute() {
@@ -94,10 +96,12 @@ function QRCodeRoute() {
       value: "https://fooble.dev",
       size: 256,
 
-      bgColor: "#ffffff",
+      bgTransparent: false,
+      bgColor: "#FFFFFF",
 
       dataModulesColor: "#000000",
       dataModulesStyle: "square",
+      dataModulesRandomSize: false,
       dataModulesSize: 1,
       dataModulesLineWidth: 0.75,
 
@@ -107,13 +111,10 @@ function QRCodeRoute() {
       finderPatternsInnerColor: "#000000",
       finderPatternsInnerStyle: "square",
 
+      showImage: false,
       imageSrc: "https://upload.fooble.dev/fooble/rainbow/logo.png",
       imageWidth: 32,
       imageHeight: 32,
-      imageExcavate: true,
-      imageX: 16,
-      imageY: 16,
-      imageOpacity: 1,
     },
     validators: {
       onChange: formSchema,
@@ -121,11 +122,6 @@ function QRCodeRoute() {
   });
 
   const qrRef = useRef<ReactQRCodeRef>(null);
-
-  const [bgTransparent, setBgTransparent] = useState(false);
-  const [dataModulesRandomSize, setDataModulesRandomSize] = useState(false);
-  const [imageVisible, setImageVisible] = useState(false);
-  const [imageCentered, setImageCentered] = useState(true);
 
   const download = () => {
     qrRef.current?.download({
@@ -137,652 +133,223 @@ function QRCodeRoute() {
 
   return (
     <>
-      <style>
-        {`body {
-          background-color: #39A95C;
-        }`}
-      </style>
+      <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
 
-      <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden qr">
-        <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
+          <div className="mr-2 flex">
+            <Separator orientation="vertical" className="h-4" />
+          </div>
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink render={<Link to="/" />}>Tools</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem className="hidden md:block">
+                Design
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>QR Code generator</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+
+      <div className="p-4 pt-0 qr">
+        <div className="mx-auto max-w-4xl w-full">
           <img
             src="/assets/qr/text.png"
-            className="h-12 w-auto mx-auto mb-4 lg:mb-8"
+            className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
           />
           <h1 className="sr-only">QR Code generator</h1>
 
           <div className="flex flex-col-reverse md:flex-row gap-8">
-            <FieldGroup className="flex-1 md:min-w-xs min-w-0 sm:min-w-md">
-              <FieldSet>
-                <FieldSeparator>General</FieldSeparator>
+            <FieldGroup className="flex-1">
+              <Accordion className="gap-2" defaultValue={["general"]}>
+                <AccordionItem value="general">
+                  <AccordionTrigger>General</AccordionTrigger>
 
-                <form.Field
-                  name="value"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Value</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder="https://fooble.dev"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <QrCodeIcon />
-                          </InputGroupAddon>
-
-                          <PresetsDropdown
-                            changeValue={(value) => field.handleChange(value)}
-                          />
-                        </InputGroup>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="size"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Size</FieldLabel>
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          max={256}
-                          min={16}
-                          step={8}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}px
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-
-              <FieldSet>
-                <FieldSeparator>Background</FieldSeparator>
-
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="bg-transparent">Transparent</FieldLabel>
-                  <Switch
-                    id="bg-transparent"
-                    name="bg-transparent"
-                    checked={bgTransparent}
-                    onCheckedChange={setBgTransparent}
-                  />
-                </Field>
-
-                <form.Field
-                  name="bgColor"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Color</FieldLabel>
-                        <InputGroup aria-disabled={bgTransparent}>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            disabled={bgTransparent}
-                            placeholder="#ffffff"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <div
-                              className="size-4 rounded-sm border border-border"
-                              style={{ backgroundColor: field.state.value }}
+                  <AccordionContent className="pb-4">
+                    <form.Field name="value">
+                      {(valueField) => (
+                        <form.Field name="size">
+                          {(sizeField) => (
+                            <GeneralSettings
+                              valueField={valueField}
+                              sizeField={sizeField}
                             />
-                          </InputGroupAddon>
-                        </InputGroup>
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
 
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
+                <AccordionItem>
+                  <AccordionTrigger>Background</AccordionTrigger>
 
-              <FieldSet>
-                <FieldSeparator>Data modules</FieldSeparator>
-
-                <form.Field
-                  name="dataModulesColor"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Color</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder="#000000"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <div
-                              className="size-4 rounded-sm border border-border"
-                              style={{ backgroundColor: field.state.value }}
+                  <AccordionContent className="pb-4">
+                    <form.Field name="bgTransparent">
+                      {(transparentField) => (
+                        <form.Field name="bgColor">
+                          {(colorField) => (
+                            <BackgroundSettings
+                              transparentField={transparentField}
+                              colorField={colorField}
                             />
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                    );
-                  }}
-                />
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
 
-                <form.Field
-                  name="dataModulesStyle"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                <AccordionItem>
+                  <AccordionTrigger>Data modules</AccordionTrigger>
 
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Style</FieldLabel>
-                        <DataModulesStyleSelect
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
+                  <AccordionContent className="pb-4">
+                    <form.Field name="dataModulesColor">
+                      {(colorField) => (
+                        <form.Field name="dataModulesStyle">
+                          {(styleField) => (
+                            <form.Field name="dataModulesRandomSize">
+                              {(randomSizeField) => (
+                                <form.Field name="dataModulesSize">
+                                  {(sizeField) => (
+                                    <form.Field name="dataModulesLineWidth">
+                                      {(lineWidthField) => (
+                                        <DataModulesSettings
+                                          colorField={colorField}
+                                          styleField={styleField}
+                                          randomSizeField={randomSizeField}
+                                          sizeField={sizeField}
+                                          lineWidthField={lineWidthField}
+                                        />
+                                      )}
+                                    </form.Field>
+                                  )}
+                                </form.Field>
+                              )}
+                            </form.Field>
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
 
-                <form.Subscribe
-                  selector={(state) => ({
-                    values: state.values,
-                  })}
-                >
-                  {({ values }) => {
-                    const currentDataModulesStyle = getDataModulesStyleByValue(
-                      values.dataModulesStyle,
-                    );
+                <AccordionItem>
+                  <AccordionTrigger>Finder patterns outer</AccordionTrigger>
 
-                    return (
-                      <>
-                        <Field orientation="horizontal">
-                          <FieldLabel htmlFor="dm-random-size">
-                            Random size
-                          </FieldLabel>
-                          <Switch
-                            id="dm-random-size"
-                            name="dm-random-size"
-                            checked={dataModulesRandomSize}
-                            onCheckedChange={setDataModulesRandomSize}
-                            disabled={
-                              !currentDataModulesStyle ||
-                              !currentDataModulesStyle.variableSize
-                            }
-                          />
-                        </Field>
-
-                        {!currentDataModulesStyle ||
-                        currentDataModulesStyle.variableLineWidth ? (
-                          <form.Field
-                            name="dataModulesLineWidth"
-                            children={(field) => {
-                              const isInvalid =
-                                field.state.meta.isTouched &&
-                                !field.state.meta.isValid;
-
-                              return (
-                                <Field
-                                  data-invalid={isInvalid}
-                                  orientation="horizontal"
-                                >
-                                  <FieldLabel htmlFor={field.name}>
-                                    Size
-                                  </FieldLabel>
-
-                                  <Slider
-                                    id={field.name}
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onValueChange={(value) =>
-                                      field.handleChange(value as number)
-                                    }
-                                    aria-invalid={isInvalid}
-                                    disabled={
-                                      !currentDataModulesStyle ||
-                                      !currentDataModulesStyle.variableLineWidth ||
-                                      dataModulesRandomSize
-                                    }
-                                    max={1}
-                                    min={0.25}
-                                    step={0.01}
-                                  />
-
-                                  <FieldDescription className="w-16 text-right">
-                                    {field.state.value}
-                                  </FieldDescription>
-                                </Field>
-                              );
-                            }}
-                          />
-                        ) : (
-                          <form.Field
-                            name="dataModulesSize"
-                            children={(field) => {
-                              const isInvalid =
-                                field.state.meta.isTouched &&
-                                !field.state.meta.isValid;
-
-                              return (
-                                <Field
-                                  data-invalid={isInvalid}
-                                  orientation="horizontal"
-                                >
-                                  <FieldLabel htmlFor={field.name}>
-                                    Size
-                                  </FieldLabel>
-
-                                  <Slider
-                                    id={field.name}
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onValueChange={(value) =>
-                                      field.handleChange(value as number)
-                                    }
-                                    aria-invalid={isInvalid}
-                                    disabled={
-                                      !currentDataModulesStyle ||
-                                      !currentDataModulesStyle.variableSize
-                                    }
-                                    max={1}
-                                    min={0.75}
-                                    step={0.01}
-                                  />
-
-                                  <FieldDescription className="w-16 text-right">
-                                    {field.state.value}
-                                  </FieldDescription>
-                                </Field>
-                              );
-                            }}
-                          />
-                        )}
-                      </>
-                    );
-                  }}
-                </form.Subscribe>
-              </FieldSet>
-
-              <FieldSet>
-                <FieldSeparator>Finder patterns outer</FieldSeparator>
-
-                <form.Field
-                  name="finderPatternsOuterColor"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Color</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder="#000000"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <div
-                              className="size-4 rounded-sm border border-border"
-                              style={{ backgroundColor: field.state.value }}
+                  <AccordionContent className="pb-4">
+                    <form.Field name="finderPatternsOuterStyle">
+                      {(styleField) => (
+                        <form.Field name="finderPatternsOuterColor">
+                          {(colorField) => (
+                            <FinderPatternsSettings
+                              colorField={colorField}
+                              styleField={styleField}
+                              styles={finderPatternInnerStyles}
                             />
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                    );
-                  }}
-                />
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
 
-                <form.Field
-                  name="finderPatternsOuterStyle"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                <AccordionItem>
+                  <AccordionTrigger>Finder patterns inner</AccordionTrigger>
 
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Style</FieldLabel>
-                        <FinderPatternOuterStyleSelect
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-
-              <FieldSet>
-                <FieldSeparator>Finder patterns inner</FieldSeparator>
-
-                <form.Field
-                  name="finderPatternsInnerColor"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Color</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder="#000000"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <div
-                              className="size-4 rounded-sm border border-border"
-                              style={{ backgroundColor: field.state.value }}
+                  <AccordionContent className="pb-4">
+                    <form.Field name="finderPatternsInnerStyle">
+                      {(styleField) => (
+                        <form.Field name="finderPatternsInnerColor">
+                          {(colorField) => (
+                            <FinderPatternsSettings
+                              colorField={colorField}
+                              styleField={styleField}
+                              styles={finderPatternInnerStyles}
                             />
-                          </InputGroupAddon>
-                        </InputGroup>
-                      </Field>
-                    );
-                  }}
-                />
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
 
-                <form.Field
-                  name="finderPatternsInnerStyle"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                <AccordionItem>
+                  <AccordionTrigger>Image</AccordionTrigger>
 
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Style</FieldLabel>
-                        <FinderPatternInnerStyleSelect
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
+                  <AccordionContent className="pb-4">
+                    <form.Field name="showImage">
+                      {(toggleField) => (
+                        <form.Field name="imageSrc">
+                          {(srcField) => (
+                            <form.Field name="imageHeight">
+                              {(heightField) => (
+                                <form.Field name="imageWidth">
+                                  {(widthField) => (
+                                    <ImageSettings
+                                      toggleField={toggleField}
+                                      srcField={srcField}
+                                      widthField={widthField}
+                                      heightField={heightField}
+                                    />
+                                  )}
+                                </form.Field>
+                              )}
+                            </form.Field>
+                          )}
+                        </form.Field>
+                      )}
+                    </form.Field>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-              <FieldSet>
-                <FieldSeparator>Image</FieldSeparator>
+              <form.Subscribe
+                selector={(state) => ({
+                  values: state.values,
+                  isValid: state.isValid,
+                })}
+              >
+                {({ values, isValid }) => {
+                  const parsedValue =
+                    values.value.trim() === ""
+                      ? "https://fooble.dev"
+                      : values.value.trim();
 
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="image-visible">Show image</FieldLabel>
-                  <Switch
-                    id="image-visible"
-                    name="image-visible"
-                    checked={imageVisible}
-                    onCheckedChange={setImageVisible}
-                  />
-                </Field>
+                  return (
+                    <ButtonGroup>
+                      <ButtonGroup>
+                        <Button onClick={download} disabled={!isValid}>
+                          <DownloadIcon />
+                          Download PNG
+                        </Button>
+                      </ButtonGroup>
 
-                <form.Field
-                  name="imageSrc"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>URL</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            disabled={!imageVisible}
-                            placeholder="https://upload.fooble.dev"
-                            autoComplete="off"
-                          />
-
-                          <InputGroupAddon>
-                            <ImageIcon />
-                          </InputGroupAddon>
-                        </InputGroup>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="imageExcavate"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Excavate</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                          disabled={!imageVisible}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="imageWidth"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Width</FieldLabel>
-
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          disabled={!imageVisible}
-                          max={64}
-                          min={8}
-                          step={1}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="imageHeight"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Height</FieldLabel>
-
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          disabled={!imageVisible}
-                          max={64}
-                          min={8}
-                          step={1}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-
-                <Field orientation="horizontal">
-                  <FieldLabel htmlFor="image-centered">Centered</FieldLabel>
-                  <Switch
-                    id="image-centered"
-                    name="image-centered"
-                    checked={imageCentered}
-                    onCheckedChange={setImageCentered}
-                    disabled={!imageVisible}
-                  />
-                </Field>
-
-                <form.Field
-                  name="imageX"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>X</FieldLabel>
-
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          disabled={!imageVisible || imageCentered}
-                          max={256}
-                          min={1}
-                          step={1}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="imageY"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Y</FieldLabel>
-
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          disabled={!imageVisible || imageCentered}
-                          max={256}
-                          min={1}
-                          step={1}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-
-                <FieldDescription>
-                  X and Y are relative to the top-left corner of the QR Code.
-                </FieldDescription>
-              </FieldSet>
+                      <ButtonGroup>
+                        <Button
+                          onClick={() => {
+                            navigator.clipboard.writeText(parsedValue);
+                          }}
+                          disabled={!isValid}
+                          variant="outline"
+                        >
+                          <CopyIcon />
+                          Copy value
+                        </Button>
+                      </ButtonGroup>
+                    </ButtonGroup>
+                  );
+                }}
+              </form.Subscribe>
             </FieldGroup>
 
             <div className="flex flex-col items-center gap-y-4 shrink-0">
@@ -809,11 +376,13 @@ function QRCodeRoute() {
                         value={parsedValue}
                         size={values.size}
                         marginSize={4}
-                        background={bgTransparent ? undefined : values.bgColor}
+                        background={
+                          values.bgTransparent ? undefined : values.bgColor
+                        }
                         dataModulesSettings={{
                           color: values.dataModulesColor,
                           style: values.dataModulesStyle as DataModulesStyle,
-                          randomSize: dataModulesRandomSize,
+                          randomSize: values.dataModulesRandomSize,
                           size: values.dataModulesSize,
                           lineWidth: values.dataModulesLineWidth,
                         }}
@@ -828,15 +397,12 @@ function QRCodeRoute() {
                             values.finderPatternsInnerStyle as FinderPatternInnerStyle,
                         }}
                         imageSettings={
-                          imageVisible
+                          values.showImage
                             ? {
                                 src: values.imageSrc,
                                 width: values.imageWidth,
                                 height: values.imageHeight,
-                                excavate: values.imageExcavate,
-                                x: imageCentered ? undefined : values.imageX,
-                                y: imageCentered ? undefined : values.imageY,
-                                opacity: values.imageOpacity,
+                                excavate: true,
                               }
                             : undefined
                         }
@@ -846,17 +412,10 @@ function QRCodeRoute() {
                   );
                 }}
               </form.Subscribe>
-
-              <div className="flex items-center justify-center gap-4">
-                <Button onClick={download} size="lg">
-                  <DownloadIcon />
-                  Download
-                </Button>
-              </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }

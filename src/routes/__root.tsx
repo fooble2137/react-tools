@@ -1,12 +1,15 @@
+import "../styles.css";
+
 import {
   HeadContent,
   Navigate,
   Outlet,
   createRootRoute,
 } from "@tanstack/react-router";
-
-import "../styles.css";
-import Navbar from "../components/navbar";
+import { TooltipProvider } from "#/components/ui/tooltip";
+import { SidebarInset, SidebarProvider } from "#/components/ui/sidebar";
+import AppSidebar from "#/components/sidebar";
+import { ThemeProvider } from "#/components/theme-provider";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -63,8 +66,16 @@ function RootComponent() {
     <>
       <HeadContent />
 
-      <Navbar />
-      <Outlet />
+      <ThemeProvider defaultTheme="dark" storageKey="theme">
+        <TooltipProvider>
+          <SidebarProvider>
+            <AppSidebar />
+            <SidebarInset>
+              <Outlet />
+            </SidebarInset>
+          </SidebarProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </>
   );
 }

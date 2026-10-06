@@ -1,51 +1,80 @@
 import {
-  BarcodeIcon,
   ClockIcon,
   FileIcon,
   GradientIcon,
-  HashIcon,
   PasswordIcon,
   QrCodeIcon,
+  TimerIcon,
   type Icon,
 } from "@phosphor-icons/react";
 
 export const navbarItems: {
-  label: string;
-  icon: Icon;
-  href: string;
-  color: string;
-  disabled?: boolean;
+  name: string;
+  items: {
+    label: string;
+    name: string;
+    icon: Icon;
+    href: string;
+    disabled?: boolean;
+  }[];
 }[] = [
   {
-    label: "QR Code",
-    icon: QrCodeIcon,
-    href: "/qr-code",
-    color: "#39a95c",
+    name: "Design",
+    items: [
+      {
+        label: "QR Code generator",
+        name: "qr",
+        icon: QrCodeIcon,
+        href: "/qr-code",
+      },
+      {
+        label: "CSS gradients",
+        name: "gradient",
+        icon: GradientIcon,
+        href: "/gradient",
+      },
+    ],
   },
   {
-    label: "Gradient",
-    icon: GradientIcon,
-    href: "/gradient",
-    color: "#8e3dff",
+    name: "Security",
+    items: [
+      {
+        label: "Password generator",
+        name: "password",
+        icon: PasswordIcon,
+        href: "/password",
+      },
+    ],
   },
   {
-    label: "Password",
-    icon: PasswordIcon,
-    href: "/password",
-    color: "#109bff",
+    name: "Time & Date",
+    items: [
+      {
+        label: "Timezones",
+        name: "timezone",
+        icon: ClockIcon,
+        href: "/timezone",
+      },
+      {
+        label: "Unix time",
+        name: "timestamp",
+        icon: TimerIcon,
+        href: "/timestamp",
+        disabled: true,
+      },
+    ],
   },
   {
-    label: "Timezone",
-    icon: ClockIcon,
-    href: "/timezone",
-    color: "#0f766e",
-  },
-  {
-    label: "File converter",
-    icon: FileIcon,
-    href: "/file-converter",
-    color: "#b83e40",
-    disabled: true,
+    name: "Files",
+    items: [
+      {
+        label: "File converter",
+        name: "file",
+        icon: FileIcon,
+        href: "/file-converter",
+        disabled: true,
+      },
+    ],
   },
 ];
 

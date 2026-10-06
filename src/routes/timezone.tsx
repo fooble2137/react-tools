@@ -14,11 +14,12 @@ import {
 } from "#/components/ui/popover";
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import z from "zod";
 import { format } from "date-fns";
 import {
   ArrowDownIcon,
+  ArrowsDownUpIcon,
   CaretDownIcon,
   ClockIcon,
   GlobeIcon,
@@ -37,8 +38,18 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "#/components/ui/combobox";
-import { labelToTimezone, timeZoneLabels } from "#/lib/timezone";
+import {
+  getTimezoneLabels,
+  getTimezonesFromCSV,
+  labelToTimezone,
+  type Timezone,
+} from "#/lib/timezone";
 import { generateHeadMeta } from "#/lib/head";
+import {
+  formatInTimeZone,
+  fromZonedTime,
+  getTimezoneOffset,
+} from "date-fns-tz";
 
 export const Route = createFileRoute("/timezone")({
   head: () => ({
@@ -61,39 +72,92 @@ export const Route = createFileRoute("/timezone")({
   component: TimezoneConverterRoute,
 });
 
-const formSchema = z.object({
-  date: z
-    .date("Please select a date inorder to convert the timezones")
-    .min(1, "Please select a date inorder to convert the timezones"),
-  time: z
-    .string()
-    .min(1, "Please select a time inorder to convert the timezones"),
-  fromTimezone: z
-    .string()
-    .min(1, "Please select a timezone inorder to convert the timezones")
-    .refine((value) => timeZoneLabels().includes(value), {
-      message:
-        "Please select a valid timezone inorder to convert the timezones",
-    }),
-  toTimezone: z
-    .string()
-    .min(1, "Please select a timezone inorder to convert the timezones")
-    .refine((value) => timeZoneLabels().includes(value), {
-      message:
-        "Please select a valid timezone inorder to convert the timezones",
-    }),
-});
+const createFormSchema = (timezoneLabels: string[]) =>
+  z.object({
+    date: z
+      .date("Please select a date inorder to convert the timezones")
+      .min(1, "Please select a date inorder to convert the timezones"),
+    time: z
+      .string()
+      .regex(
+        /^([01]\d|2[0-3]):[0-5]\d$/,
+        "Please select a valid time inorder to convert the timezones",
+      ),
+    fromTimezone: z
+      .string()
+      .min(1, "Please select a timezone inorder to convert the timezones")
+      .refine((value) => timezoneLabels.includes(value), {
+        message:
+          "Please select a valid timezone inorder to convert the timezones",
+      }),
+    toTimezone: z
+      .string()
+      .min(1, "Please select a timezone inorder to convert the timezones")
+      .refine((value) => timezoneLabels.includes(value), {
+        message:
+          "Please select a valid timezone inorder to convert the timezones",
+      }),
+  });
+
+const convertedDateTimeFormat = "EEEE, MMMM dd, yyyy 'at' HH:mm";
+
+const convertDateTime = (
+  date: Date,
+  time: string,
+  fromTimezone: string,
+  toTimezone: string,
+) => {
+  const instant = fromZonedTime(
+    `${format(date, "yyyy-MM-dd")}T${time}:00`,
+    fromTimezone,
+  );
+  const sourceOffset = getTimezoneOffset(fromTimezone, instant);
+  const targetOffset = getTimezoneOffset(toTimezone, instant);
+  const source = formatInTimeZone(
+    instant,
+    fromTimezone,
+    convertedDateTimeFormat,
+  );
+
+  return {
+    source,
+    target:
+      sourceOffset === targetOffset
+        ? source
+        : formatInTimeZone(instant, toTimezone, convertedDateTimeFormat),
+  };
+};
 
 function TimezoneConverterRoute() {
+  const [timezones, setTimezones] = useState<Timezone[]>([]);
+  const [timezoneError, setTimezoneError] = useState<string | null>(null);
+  const timezoneLabels = useMemo(
+    () => getTimezoneLabels(timezones),
+    [timezones],
+  );
+
+  useEffect(() => {
+    getTimezonesFromCSV()
+      .then(setTimezones)
+      .catch((error: unknown) => {
+        setTimezoneError(
+          error instanceof Error
+            ? error.message
+            : "Unable to load timezone list",
+        );
+      });
+  }, []);
+
   const form = useForm({
     defaultValues: {
       date: new Date(),
-      time: new Date().toISOString().split("T")[1].slice(0, 5),
-      fromTimezone: "",
-      toTimezone: "",
+      time: format(new Date(), "HH:mm"),
+      fromTimezone:
+        "Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna (UTC+02:00)",
+      toTimezone: "Eastern Time US and Canada (UTC-04:00)",
     },
     validators: {
-      onChange: formSchema,
+      onChange: createFormSchema(timezoneLabels),
     },
   });
 
@@ -115,6 +179,11 @@ function TimezoneConverterRoute() {
             aria-hidden="true"
           />
           <h1 className="sr-only">Timezone converter</h1>
+          {timezoneError && (
+            <p className="mb-4 text-center text-sm text-destructive">
+              {timezoneError}
+            </p>
+          )}
 
           <div className="sm:min-w-md">
             <FieldGroup className="w-full">
@@ -151,6 +220,8 @@ function TimezoneConverterRoute() {
                             align="start"
                           >
                             <Calendar
+                              startMonth={new Date(1900, 0)}
+                              endMonth={new Date(2100, 0)}
                               mode="single"
                               selected={field.state.value}
                               captionLayout="dropdown"
@@ -221,7 +292,7 @@ function TimezoneConverterRoute() {
                           From timezone
                         </FieldLabel>
                         <Combobox
-                          items={timeZoneLabels()}
+                          items={timezoneLabels}
                           onInputValueChange={field.handleChange}
                           value={field.state.value}
                         >
@@ -262,7 +333,7 @@ function TimezoneConverterRoute() {
                           To timezone
                         </FieldLabel>
                         <Combobox
-                          items={timeZoneLabels()}
+                          items={timezoneLabels}
                           onInputValueChange={field.handleChange}
                           value={field.state.value}
                         >
@@ -303,89 +374,62 @@ function TimezoneConverterRoute() {
                 >
                   {({ values, isValid }) => {
                     const { date, time, fromTimezone, toTimezone } = values;
-
-                    const dateTime = new Date(
-                      `${format(date, "yyyy-MM-dd")}T${time}`,
+                    const sourceTimezone = labelToTimezone(
+                      fromTimezone,
+                      timezones,
                     );
+                    const targetTimezone = labelToTimezone(
+                      toTimezone,
+                      timezones,
+                    );
+                    const conversion =
+                      isValid && sourceTimezone && targetTimezone
+                        ? convertDateTime(
+                            date,
+                            time,
+                            sourceTimezone,
+                            targetTimezone,
+                          )
+                        : null;
 
-                    if (isValid && fromTimezone && toTimezone) {
-                      const fromDateTime = new Date(
-                        dateTime.toLocaleString("en-US", {
-                          timeZone: labelToTimezone(fromTimezone) || "UTC",
-                        }),
-                      );
-
-                      const toDateTime = new Date(
-                        fromDateTime.toLocaleString("en-US", {
-                          timeZone: labelToTimezone(toTimezone) || "UTC",
-                        }),
-                      );
-
+                    if (conversion && sourceTimezone && targetTimezone) {
                       return (
                         <>
                           <p className="text-center font-medium font-mono">
-                            {format(
-                              toDateTime,
-                              "EEEE, MMMM dd, yyyy 'at' HH:mm",
-                            )}
+                            {conversion.target}
                           </p>
-
                           <FieldSeparator />
-
                           <div className="flex flex-col items-center text-sm text-muted-foreground gap-1">
                             <span>
-                              {format(
-                                fromDateTime,
-                                "EEEE, MMMM dd, yyyy 'at' HH:mm",
-                              )}{" "}
-                              ({labelToTimezone(fromTimezone) || "UTC"})
+                              {conversion.source} ({sourceTimezone})
                             </span>
 
                             <ArrowDownIcon className="size-3" />
 
                             <span>
-                              {format(
-                                toDateTime,
-                                "EEEE, MMMM dd, yyyy 'at' HH:mm",
-                              )}{" "}
-                              ({labelToTimezone(toTimezone) || "UTC"})
+                              {conversion.target} ({targetTimezone})
                             </span>
                           </div>
                         </>
                       );
                     }
-
-                    return (
-                      <>
-                        <p className="text-center font-medium font-mono">
-                          {format(new Date(), "EEEE, MMMM dd, yyyy 'at' HH:mm")}
-                        </p>
-
-                        <FieldSeparator />
-
-                        <div className="flex flex-col items-center text-sm text-muted-foreground gap-1">
-                          <span>
-                            {format(
-                              new Date(),
-                              "EEEE, MMMM dd, yyyy 'at' HH:mm",
-                            )}{" "}
-                            (UTC)
-                          </span>
-
-                          <ArrowDownIcon className="size-3" />
-
-                          <span>
-                            {format(
-                              new Date(),
-                              "EEEE, MMMM dd, yyyy 'at' HH:mm",
-                            )}{" "}
-                            (UTC)
-                          </span>
-                        </div>
-                      </>
-                    );
                   }}
                 </form.Subscribe>
+
+                <Button
+                  size="lg"
+                  className="w-fit mx-auto"
+                  onClick={() => {
+                    const fromTimezone = form.getFieldValue("fromTimezone");
+                    const toTimezone = form.getFieldValue("toTimezone");
+
+                    form.setFieldValue("fromTimezone", toTimezone);
+                    form.setFieldValue("toTimezone", fromTimezone);
+                  }}
+                >
+                  <ArrowsDownUpIcon />
+                  Switch timezones
+                </Button>
               </FieldSet>
             </FieldGroup>
           </div>
