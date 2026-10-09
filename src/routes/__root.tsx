@@ -69,7 +69,7 @@ function RootComponent() {
       <ThemeProvider defaultTheme="dark" storageKey="theme">
         <TooltipProvider>
           <SidebarProvider>
-            <AppSidebar />
+            <AppSidebar variant="inset" collapsible="offcanvas" />
             <SidebarInset>
               <Outlet />
             </SidebarInset>

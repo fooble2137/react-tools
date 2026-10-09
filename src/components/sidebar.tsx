@@ -9,6 +9,7 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "./ui/sidebar";
 import { navbarItems } from "#/data/navbar";
 import { cn } from "cn";
@@ -66,6 +67,7 @@ const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   );
 };
