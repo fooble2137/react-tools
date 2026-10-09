@@ -55,13 +55,6 @@ export const navbarItems: {
         icon: ClockIcon,
         href: "/timezone",
       },
-      {
-        label: "Unix time",
-        name: "timestamp",
-        icon: TimerIcon,
-        href: "/timestamp",
-        disabled: true,
-      },
     ],
   },
   {
