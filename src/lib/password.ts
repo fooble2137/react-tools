@@ -1,3 +1,35 @@
+type PasswordStrength =
+  "Very Weak" | "Weak" | "Fair" | "Good" | "Strong" | "Excellent";
+
+type PasswordStrengthResult = {
+  score: number;
+  strength: PasswordStrength;
+};
+
+const COMMON_PASSWORDS = new Set([
+  "password",
+  "password123",
+  "123456",
+  "12345678",
+  "123456789",
+  "qwerty",
+  "qwerty123",
+  "admin",
+  "letmein",
+  "welcome",
+  "iloveyou",
+  "abc123",
+]);
+
+const KEYBOARD_PATTERNS = [
+  "qwerty",
+  "qwertz",
+  "asdfgh",
+  "zxcvbn",
+  "1qaz",
+  "12345",
+];
+
 export const generatePassword = (options: {
   length: number;
   lowercase: boolean;
@@ -57,67 +89,123 @@ export const generatePassword = (options: {
   return password;
 };
 
-export const calculatePasswordStrength = (password: string): number => {
-  if (!password || password.length == 0) return 0;
+function containsSequence(password: string): boolean {
+  const value = password.toLowerCase();
+
+  for (let i = 0; i <= value.length - 3; i++) {
+    const a = value.charCodeAt(i);
+    const b = value.charCodeAt(i + 1);
+    const c = value.charCodeAt(i + 2);
+
+    if (
+      b - a === 1 &&
+      c - b === 1 &&
+      ((a >= 48 && c <= 57) || (a >= 97 && c <= 122))
+    ) {
+      return true;
+    }
+
+    if (
+      b - a === -1 &&
+      c - b === -1 &&
+      ((a <= 57 && a >= 48 && c >= 48 && c <= 57) ||
+        (a <= 122 && a >= 97 && c >= 97 && c <= 122))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export const calculatePasswordStrength = (
+  password: string,
+): PasswordStrengthResult => {
+  const chars = Array.from(password);
+  const length = chars.length;
+
+  if (length === 0) {
+    return {
+      score: 0,
+      strength: "Very Weak",
+    };
+  }
 
   let score = 0;
 
-  const length = password.length;
-  if (length >= 16) score += 35;
-  else if (length >= 14) score += 30;
-  else if (length >= 12) score += 25;
-  else if (length >= 10) score += 18;
-  else if (length >= 8) score += 12;
-  else if (length >= 6) score += 6;
-  else score += 2;
+  if (length >= 20) score += 65;
+  else if (length >= 16) score += 55;
+  else if (length >= 12) score += 45;
+  else if (length >= 8) score += 30;
+  else if (length >= 5) score += 15;
+  else score += 5;
 
-  const hasLowercase = /[a-z]/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasNumbers = /[0-9]/.test(password);
-  const hasSymbols = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(password);
+  const hasLowercase = /\p{Ll}/u.test(password);
+  const hasUppercase = /\p{Lu}/u.test(password);
+  const hasNumbers = /\p{N}/u.test(password);
+  const hasSymbols = /[^\p{L}\p{N}\s]/u.test(password);
+  const hasWhitespace = /\s/u.test(password);
 
-  let characterTypes = 0;
-  if (hasLowercase) {
-    score += 5;
-    characterTypes++;
+  const characterTypes = [
+    hasLowercase,
+    hasUppercase,
+    hasNumbers,
+    hasSymbols,
+  ].filter(Boolean).length;
+
+  score += characterTypes * 5;
+
+  if (characterTypes >= 3 && length >= 12) score += 5;
+
+  const uniqueChars = new Set(chars).size;
+  const uniqueRatio = uniqueChars / length;
+
+  if (uniqueRatio >= 0.9 && length >= 8) score += 15;
+  else if (uniqueRatio >= 0.7 && length >= 8) score += 10;
+  else if (uniqueRatio >= 0.5 && length >= 6) score += 5;
+
+  if (/(.)\1{2,}/u.test(password)) score -= 15;
+
+  if (/(.{2,})\1+/u.test(password)) score -= 15;
+
+  if (containsSequence(password)) score -= 10;
+
+  const normalized = password.toLowerCase();
+
+  if (KEYBOARD_PATTERNS.some((pattern) => normalized.includes(pattern))) {
+    score -= 20;
   }
-  if (hasUppercase) {
-    score += 5;
-    characterTypes++;
-  }
-  if (hasNumbers) {
-    score += 5;
-    characterTypes++;
-  }
-  if (hasSymbols) {
-    score += 10;
-    characterTypes++;
+
+  if (COMMON_PASSWORDS.has(normalized)) {
+    score -= 50;
   }
 
-  if (characterTypes >= 4 && length >= 10) score += 15;
-  else if (characterTypes >= 3 && length >= 8) score += 10;
-  else if (characterTypes >= 2 && length >= 6) score += 5;
+  if (
+    (hasLowercase || hasUppercase) &&
+    !hasNumbers &&
+    !hasSymbols &&
+    !hasWhitespace &&
+    length < 12
+  ) {
+    score -= 5;
+  }
 
-  const uniqueChars = new Set(password).size;
-  const uniqueCharRatio = uniqueChars / length;
-  if (uniqueCharRatio >= 0.9 && length >= 8) score += 10;
-  else if (uniqueCharRatio >= 0.7 && length >= 6) score += 5;
-
-  const hasRepeatedChars = /(.)\1{2,}/.test(password);
-  const hasSequentialChars =
-    /(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz)/i.test(
-      password,
-    );
-  const hasKeyboardPatterns = /(qwerty|asdfgh|zxcvbn)/i.test(password);
-
-  if (hasRepeatedChars) score -= 15;
-  if (hasSequentialChars) score -= 10;
-  if (hasKeyboardPatterns) score -= 25;
+  if (/^\s+$/u.test(password)) score = 0;
 
   score = Math.max(0, Math.min(100, score));
+  score = Math.round(score);
 
-  const maxScorePosibble = 85;
-  const normalizedScore = (score / maxScorePosibble) * 100;
+  let strength: PasswordStrength;
 
-  return Math.round(normalizedScore);
+  if (score >= 90) strength = "Excellent";
+  else if (score >= 75) strength = "Strong";
+  else if (score >= 60) strength = "Good";
+  else if (score >= 40) strength = "Fair";
+  else if (score >= 20) strength = "Weak";
+  else strength = "Very Weak";
+
+  return {
+    score,
+    strength,
+  };
 };

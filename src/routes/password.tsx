@@ -1,22 +1,35 @@
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "#/components/ui/accordion";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "#/components/ui/breadcrumb";
+import { Button } from "#/components/ui/button";
+import { ButtonGroup } from "#/components/ui/button-group";
+import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
   FieldSet,
 } from "#/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
 } from "#/components/ui/input-group";
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "#/components/ui/progress";
+import { Progress } from "#/components/ui/progress";
+import { Separator } from "#/components/ui/separator";
+import { SidebarTrigger } from "#/components/ui/sidebar";
 import { Slider } from "#/components/ui/slider";
 import { Switch } from "#/components/ui/switch";
 import { generateHeadMeta } from "#/lib/head";
@@ -27,7 +40,7 @@ import {
   PasswordIcon,
 } from "@phosphor-icons/react";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import z from "zod";
 
@@ -100,241 +113,269 @@ function PasswordGeneratorRoute() {
 
   return (
     <>
-      <style>
-        {`body {
-          background-color: #109bff;
-        }`}
-      </style>
+      <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
 
-      <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden password">
-        <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
+          <div className="mr-2 flex">
+            <Separator orientation="vertical" className="h-4" />
+          </div>
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink render={<Link to="/" />}>Tools</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem className="hidden md:block">
+                Security
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Password generator</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+
+      <div className="p-4 pt-0 password">
+        <div className="mx-auto max-w-4xl w-full">
           <img
             src="/assets/password/text.png"
-            className="h-12 w-auto mx-auto mb-4 lg:mb-8"
+            className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
             alt="Password generator"
           />
           <h1 className="sr-only">Password generator</h1>
 
-          <div className="sm:min-w-md">
-            <FieldGroup className="w-full">
-              <FieldSet>
-                <Field>
-                  <FieldLabel htmlFor="gen-password">
-                    Generated password
-                  </FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="gen-password"
-                      name="gen-password"
-                      value={password}
-                      readOnly
+          <FieldGroup className="w-full">
+            <Accordion
+              className="gap-2"
+              defaultValue={["general", "types"]}
+              multiple
+            >
+              <AccordionItem value="general">
+                <AccordionTrigger>General</AccordionTrigger>
+
+                <AccordionContent className="pb-4">
+                  <FieldSet className="ml-4 mr-2">
+                    <form.Field
+                      name="length"
+                      children={(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
+
+                        return (
+                          <Field
+                            data-invalid={isInvalid}
+                            orientation="horizontal"
+                          >
+                            <FieldLabel htmlFor={field.name}>Size</FieldLabel>
+
+                            <Slider
+                              id={field.name}
+                              name={field.name}
+                              value={field.state.value}
+                              onValueChange={(value) =>
+                                field.handleChange(value as number)
+                              }
+                              aria-invalid={isInvalid}
+                              max={64}
+                              min={4}
+                              step={1}
+                            />
+
+                            <FieldDescription className="w-16 text-right">
+                              {field.state.value}
+                            </FieldDescription>
+                          </Field>
+                        );
+                      }}
+                    />
+                  </FieldSet>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="types">
+                <AccordionTrigger>Character types</AccordionTrigger>
+
+                <AccordionContent className="pb-4">
+                  <FieldSet className="ml-4 mr-2">
+                    <form.Field
+                      name="lowercase"
+                      children={(field) => (
+                        <Field orientation="horizontal" className="mt-2">
+                          <FieldLabel htmlFor={field.name}>
+                            Lowercase letters
+                          </FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
                     />
 
-                    <InputGroupAddon>
+                    <form.Field
+                      name="uppercase"
+                      children={(field) => (
+                        <Field orientation="horizontal">
+                          <FieldLabel htmlFor={field.name}>
+                            Uppercase letters
+                          </FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
+                    />
+
+                    <form.Field
+                      name="numbers"
+                      children={(field) => (
+                        <Field orientation="horizontal">
+                          <FieldLabel htmlFor={field.name}>Numbers</FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
+                    />
+
+                    <form.Field
+                      name="symbols"
+                      children={(field) => (
+                        <Field orientation="horizontal">
+                          <FieldLabel htmlFor={field.name}>Symbols</FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
+                    />
+
+                    <form.Field
+                      name="whitespace"
+                      children={(field) => (
+                        <Field orientation="horizontal">
+                          <FieldLabel htmlFor={field.name}>
+                            Whitespace
+                          </FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
+                    />
+
+                    <form.Field
+                      name="minimizeDuplicates"
+                      children={(field) => (
+                        <Field orientation="horizontal">
+                          <FieldLabel htmlFor={field.name}>
+                            Minimize duplicate characters
+                          </FieldLabel>
+                          <Switch
+                            id={field.name}
+                            name={field.name}
+                            checked={field.state.value}
+                            onCheckedChange={(value) =>
+                              field.handleChange(value)
+                            }
+                          />
+                        </Field>
+                      )}
+                    />
+                  </FieldSet>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <FieldSet className="mt-4">
+              <Field>
+                <InputGroup>
+                  <InputGroupTextarea
+                    id="generated-password"
+                    value={password}
+                    readOnly
+                    aria-label="Generated password"
+                    className="font-mono text-sm"
+                  />
+
+                  <InputGroupAddon align="block-start" className="border-b">
+                    <InputGroupText>
                       <PasswordIcon />
-                    </InputGroupAddon>
+                      Generated password
+                    </InputGroupText>
+                  </InputGroupAddon>
 
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupButton
-                        variant="ghost"
-                        aria-label="Copy"
-                        size="icon-xs"
-                        onClick={() => {
-                          navigator.clipboard.writeText(password);
-                        }}
-                      >
-                        <CopyIcon />
-                      </InputGroupButton>
-                    </InputGroupAddon>
+                  <InputGroupAddon align="block-end" className="border-t">
+                    <Progress
+                      value={calculatePasswordStrength(password).score}
+                      className="w-full"
+                    />
 
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupButton
-                        variant="ghost"
-                        aria-label="Regenerate"
-                        size="icon-xs"
-                        onClick={() => {
-                          setPassword(generatePassword(form.state.values));
-                        }}
-                      >
-                        <ArrowClockwiseIcon />
-                      </InputGroupButton>
-                    </InputGroupAddon>
-                  </InputGroup>
-                </Field>
-              </FieldSet>
-              <FieldSet>
-                <FieldSeparator />
+                    <InputGroupText className="text-nowrap">
+                      {calculatePasswordStrength(password).strength}
+                    </InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
 
-                <form.Field
-                  name="length"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+              <ButtonGroup>
+                <ButtonGroup>
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard.writeText(password);
+                    }}
+                  >
+                    <CopyIcon />
+                    Copy
+                  </Button>
+                </ButtonGroup>
 
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Length</FieldLabel>
-                        <Slider
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onValueChange={(value) =>
-                            field.handleChange(value as number)
-                          }
-                          aria-invalid={isInvalid}
-                          max={64}
-                          min={4}
-                          step={1}
-                        />
-
-                        <FieldDescription className="w-16 text-right">
-                          {field.state.value}
-                        </FieldDescription>
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-              <FieldSet>
-                <FieldSeparator>Character types</FieldSeparator>
-
-                <form.Field
-                  name="lowercase"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Lowercase</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="uppercase"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Uppercase</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="numbers"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Numbers</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="symbols"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Symbols</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="whitespace"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>Whitespace</FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="minimizeDuplicates"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid} orientation="horizontal">
-                        <FieldLabel htmlFor={field.name}>
-                          Minimize duplicate characters
-                        </FieldLabel>
-                        <Switch
-                          id={field.name}
-                          name={field.name}
-                          checked={field.state.value}
-                          onCheckedChange={(value) => field.handleChange(value)}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-
-              <FieldSet>
-                <FieldSeparator />
-
-                <Progress value={calculatePasswordStrength(password)}>
-                  <ProgressLabel>Password strength</ProgressLabel>
-                  <ProgressValue />
-                </Progress>
-              </FieldSet>
-            </FieldGroup>
-          </div>
+                <ButtonGroup>
+                  <Button
+                    onClick={() => {
+                      setPassword(generatePassword(form.state.values));
+                    }}
+                    variant="outline"
+                  >
+                    <ArrowClockwiseIcon />
+                    Regenerate
+                  </Button>
+                </ButtonGroup>
+              </ButtonGroup>
+            </FieldSet>
+          </FieldGroup>
         </div>
-      </main>
+      </div>
     </>
   );
 }
