@@ -15,6 +15,7 @@ import {
   getTimezoneLabels,
   getTimezones,
   labelToTimezone,
+  parseGMTOffset,
 } from "#/lib/timezone";
 import { generateHeadMeta } from "#/lib/head";
 import {
@@ -46,7 +47,7 @@ import {
   CollapsibleTrigger,
 } from "#/components/ui/collapsible";
 import TimeSettings from "#/components/timezone/time";
-import TimezoneSelect from "#/components/timezone/timezone";
+import TimezoneSelect from "#/components/timezone/timezone-select";
 
 export const Route = createFileRoute("/timezone")({
   head: () => ({
@@ -240,9 +241,8 @@ function TimezoneConverterRoute() {
               <SunHorizonIcon />
               <AlertTitle>Daylight saving time</AlertTitle>
               <AlertDescription>
-                Converting time zones does not take daylight saving time into
-                account. If daylight saving time is in effect in either time
-                zone, you may need to adjust the time manually.
+                Time zone conversion takes daylight saving time into account.
+                However, the labels in the time zone selector do not.
               </AlertDescription>
             </Alert>
 
@@ -254,8 +254,25 @@ function TimezoneConverterRoute() {
             >
               {({ values, isValid }) => {
                 const { date, time, fromTimezone, toTimezone } = values;
-                const sourceTimezone = labelToTimezone(fromTimezone, timezones);
-                const targetTimezone = labelToTimezone(toTimezone, timezones);
+
+                let sourceTimezone = labelToTimezone(fromTimezone, timezones);
+                let targetTimezone = labelToTimezone(toTimezone, timezones);
+
+                if (sourceTimezone === "Factory") {
+                  sourceTimezone = "UTC";
+                }
+                if (targetTimezone === "Factory") {
+                  targetTimezone = "UTC";
+                }
+
+                if (sourceTimezone?.startsWith("Etc")) {
+                  sourceTimezone = parseGMTOffset(sourceTimezone);
+                }
+
+                if (targetTimezone?.startsWith("Etc")) {
+                  targetTimezone = parseGMTOffset(targetTimezone);
+                }
+
                 const conversion =
                   isValid && sourceTimezone && targetTimezone
                     ? convertDateTime(

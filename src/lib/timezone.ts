@@ -30,3 +30,15 @@ export const labelToTimezone = (
 
   return timezone?.timezone ?? null;
 };
+
+export const parseGMTOffset = (offset: string): string => {
+  const match = offset.match(/Etc\/GMT([+-])(\d+)/);
+  if (!match) {
+    return "+00:00";
+  }
+
+  const sign = match[1] === "+" ? "-" : "+";
+  const hours = match[2].padStart(2, "0");
+
+  return `${sign}${hours}:00`;
+};
