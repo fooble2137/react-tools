@@ -28,7 +28,7 @@ export const navbarItems: {
         href: "/qr-code",
       },
       {
-        label: "CSS gradients",
+        label: "Gradient generator",
         name: "gradient",
         icon: GradientIcon,
         href: "/gradient",

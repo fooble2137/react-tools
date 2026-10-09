@@ -1,24 +1,30 @@
-import { Button } from "#/components/ui/button";
+import ColorStop from "#/components/gradient/color";
+import DirectionSettings from "#/components/gradient/direction";
 import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldSet,
-} from "#/components/ui/field";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "#/components/ui/accordion";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "#/components/ui/breadcrumb";
+import { Button } from "#/components/ui/button";
+import { ButtonGroup } from "#/components/ui/button-group";
+import { Field, FieldGroup, FieldSet } from "#/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
+  InputGroupText,
+  InputGroupTextarea,
 } from "#/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "#/components/ui/select";
+import { Separator } from "#/components/ui/separator";
+import { SidebarTrigger } from "#/components/ui/sidebar";
 import { randomHexColor } from "#/lib/gradient";
 import { generateHeadMeta } from "#/lib/head";
 import {
@@ -26,10 +32,11 @@ import {
   PaletteIcon,
   PlusIcon,
   ShuffleIcon,
-  TrashIcon,
 } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { cn } from "cn";
+import z from "zod";
 
 export const Route = createFileRoute("/gradient")({
   head: () => ({
@@ -60,304 +67,303 @@ export const Route = createFileRoute("/gradient")({
   component: GradientGeneratorRoute,
 });
 
-const directions = [
-  {
-    label: "To right",
-    value: "to right",
-  },
-  {
-    label: "To left",
-    value: "to left",
-  },
-  {
-    label: "To bottom",
-    value: "to bottom",
-  },
-  {
-    label: "To top",
-    value: "to top",
-  },
-  {
-    label: "To bottom right",
-    value: "to bottom right",
-  },
-  {
-    label: "To bottom left",
-    value: "to bottom left",
-  },
-  {
-    label: "To top right",
-    value: "to top right",
-  },
-  {
-    label: "To top left",
-    value: "to top left",
-  },
-  {
-    label: "Custom angle",
-    value: "custom",
-  },
-];
+const formSchema = z.object({
+  direction: z.string().min(1, "Direction is required"),
+  degree: z
+    .number()
+    .min(0, "Degree must be at least 0")
+    .max(360, "Degree must be at most 360"),
+  stops: z
+    .array(
+      z.object({
+        id: z.number(),
+        color: z
+          .string()
+          .regex(/^#([0-9A-Fa-f]{3}){1,2}$/, "Invalid hex color"),
+        stop: z
+          .number()
+          .min(0, "Stop must be at least 0")
+          .max(100, "Stop must be at most 100"),
+      }),
+    )
+    .min(2, "At least two color stops are required"),
+});
 
 function GradientGeneratorRoute() {
-  const [direction, setDirection] = useState("to right");
-  const [degree, setDegree] = useState(90);
-  const [stops, setStops] = useState([
-    { id: 1, color: "#8e3dff", stop: 0 },
-    { id: 2, color: "#ff3d8e", stop: 100 },
-  ]);
-
-  const sortedStops = useMemo(
-    () =>
-      [...stops].sort(
-        (first, second) => first.stop - second.stop || first.id - second.id,
-      ),
-    [stops],
-  );
-
-  const gradientValue = useMemo(() => {
-    const directionValue = direction === "custom" ? `${degree}deg` : direction;
-    const colorStops = sortedStops
-      .map(({ color, stop }) => `${color} ${stop}%`)
-      .join(", ");
-
-    return `linear-gradient(${directionValue}, ${colorStops})`;
-  }, [degree, direction, sortedStops]);
-
-  const cssGradient = `background: ${gradientValue};`;
-
-  const updateStop = (
-    id: number,
-    property: "color" | "stop",
-    value: string,
-  ) => {
-    setStops((currentStops) =>
-      currentStops.map((currentStop) =>
-        currentStop.id === id
-          ? {
-              ...currentStop,
-              [property]:
-                property === "stop"
-                  ? Math.min(100, Math.max(0, Number(value) || 0))
-                  : value,
-            }
-          : currentStop,
-      ),
-    );
-  };
+  const form = useForm({
+    defaultValues: {
+      direction: "to right",
+      degree: 90,
+      stops: [
+        { id: 1, color: "#8E3DFF", stop: 0 },
+        { id: 2, color: "#FF3D8E", stop: 100 },
+      ],
+    },
+    validators: {
+      onChange: formSchema,
+    },
+  });
 
   return (
     <>
-      <style>
-        {`body {
-          background-color: #8e3dff;
-        }`}
-      </style>
+      <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
 
-      <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden gradient">
-        <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
+          <div className="mr-2 flex">
+            <Separator orientation="vertical" className="h-4" />
+          </div>
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink render={<Link to="/" />}>Tools</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem className="hidden md:block">
+                Design
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Gradient generator</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+
+      <div className="p-4 pt-0 gradient">
+        <div className="mx-auto max-w-4xl w-full">
           <img
             src="/assets/gradient/text.png"
-            className="h-12 w-auto mx-auto mb-4 lg:mb-8"
+            className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
           />
           <h1 className="sr-only">Gradient generator</h1>
 
-          <FieldGroup className="w-full md:min-w-md">
-            <FieldSet>
-              <FieldSeparator>Direction</FieldSeparator>
-
-              <Field>
-                <FieldLabel htmlFor="gradient-direction">
-                  Gradient direction
-                </FieldLabel>
-                <Select
-                  items={directions.map((direction) => ({
-                    label: direction.label,
-                    value: direction.value,
-                  }))}
-                  value={direction}
-                  onValueChange={(value) => setDirection(value ?? "to right")}
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col-reverse md:flex-row gap-8">
+              <FieldGroup className="flex-1">
+                <Accordion
+                  className="gap-2"
+                  defaultValue={["direction", "colors"]}
+                  multiple
                 >
-                  <SelectTrigger id="gradient-direction" className="w-full">
-                    <SelectValue placeholder="Select direction" />
-                  </SelectTrigger>
-                  <SelectContent alignItemWithTrigger={false}>
-                    {directions.map((direction) => (
-                      <SelectItem key={direction.value} value={direction.value}>
-                        {direction.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
+                  <AccordionItem value="direction">
+                    <AccordionTrigger>Direction</AccordionTrigger>
 
-              <Field orientation="horizontal">
-                <FieldLabel htmlFor="gradient-degree">Angle</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="gradient-degree"
-                    type="number"
-                    min={0}
-                    max={360}
-                    value={degree}
-                    onChange={(event) =>
-                      setDegree(
-                        Math.min(
-                          360,
-                          Math.max(0, Number(event.target.value) || 0),
-                        ),
-                      )
-                    }
-                    disabled={direction !== "custom"}
-                  />
-                  <InputGroupAddon align="inline-end">deg</InputGroupAddon>
-                </InputGroup>
-              </Field>
-            </FieldSet>
+                    <AccordionContent className="pb-4">
+                      <form.Field name="direction">
+                        {(directionField) => (
+                          <form.Field name="degree">
+                            {(angleField) => (
+                              <DirectionSettings
+                                directionField={directionField}
+                                angleField={angleField}
+                              />
+                            )}
+                          </form.Field>
+                        )}
+                      </form.Field>
+                    </AccordionContent>
+                  </AccordionItem>
 
-            <FieldSet>
-              <FieldSeparator>Colors</FieldSeparator>
+                  <AccordionItem value="colors">
+                    <AccordionTrigger>Colors</AccordionTrigger>
 
-              {sortedStops.map((stop, index) => (
-                <Field key={stop.id} orientation="horizontal">
-                  <FieldLabel
-                    htmlFor={`gradient-color-${stop.id}`}
-                    className="w-32"
-                  >
-                    Color {index + 1}
-                  </FieldLabel>
+                    <AccordionContent className="pb-4">
+                      <FieldSet className="ml-4 mr-2">
+                        <form.Field name="stops" mode="array">
+                          {(stopsField) => (
+                            <>
+                              {stopsField.state.value.map((stop, index) => (
+                                <form.Field name={`stops[${index}].color`}>
+                                  {(field) => (
+                                    <form.Field name={`stops[${index}].stop`}>
+                                      {(positionField) => (
+                                        <ColorStop
+                                          key={stop.id}
+                                          colorField={field}
+                                          positionField={positionField}
+                                          stopsField={stopsField}
+                                          index={index}
+                                          canBeRemoved={
+                                            stopsField.state.value.length > 2
+                                          }
+                                        />
+                                      )}
+                                    </form.Field>
+                                  )}
+                                </form.Field>
+                              ))}
 
-                  <InputGroup>
-                    <InputGroupInput
-                      id={`gradient-color-${stop.id}`}
-                      value={stop.color}
-                      onChange={(event) =>
-                        updateStop(stop.id, "color", event.target.value)
-                      }
-                      aria-label={`Color ${index + 1}`}
-                    />
-                    <InputGroupAddon>
-                      <div
-                        className="size-4 rounded-sm border border-border"
-                        style={{ backgroundColor: stop.color }}
-                      />
-                    </InputGroupAddon>
-                  </InputGroup>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-fit"
+                                onClick={() => {
+                                  stopsField.pushValue({
+                                    id:
+                                      Math.max(
+                                        0,
+                                        ...stopsField.state.value.map(
+                                          (s) => s.id,
+                                        ),
+                                      ) + 1,
+                                    color: randomHexColor(),
+                                    stop: Math.min(
+                                      100,
+                                      stopsField.state.value[
+                                        stopsField.state.value.length - 1
+                                      ].stop + 10,
+                                    ),
+                                  });
+                                }}
+                              >
+                                <PlusIcon />
+                                Add color
+                              </Button>
+                            </>
+                          )}
+                        </form.Field>
+                      </FieldSet>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </FieldGroup>
 
-                  <InputGroup className="w-20 shrink-0">
-                    <InputGroupInput
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={stop.stop}
-                      onChange={(event) =>
-                        updateStop(stop.id, "stop", event.target.value)
-                      }
-                      aria-label={`Color ${index + 1} stop`}
-                    />
-                    <InputGroupAddon align="inline-end">%</InputGroupAddon>
-                  </InputGroup>
-
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={`Remove color ${index + 1}`}
-                    disabled={stops.length <= 2}
-                    onClick={() =>
-                      setStops((currentStops) =>
-                        currentStops.filter(
-                          (currentStop) => currentStop.id !== stop.id,
-                        ),
-                      )
-                    }
-                  >
-                    <TrashIcon />
-                  </Button>
-                </Field>
-              ))}
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setStops((currentStops) => [
-                    ...currentStops,
-                    {
-                      id: Date.now(),
-                      color: randomHexColor(),
-                      stop:
-                        currentStops.length > 0
-                          ? Math.min(
-                              100,
-                              currentStops[currentStops.length - 1].stop + 10,
-                            )
-                          : 0,
-                    },
-                  ])
-                }
+              <form.Subscribe
+                selector={(state) => ({
+                  values: state.values,
+                  isValid: state.isValid,
+                })}
               >
-                <PlusIcon />
-                Add color stop
-              </Button>
-            </FieldSet>
+                {({ values, isValid }) => {
+                  const generateCSSGradient = () => {
+                    const directionValue =
+                      values.direction === "custom"
+                        ? `${values.degree}deg`
+                        : values.direction;
+                    const colorStops = values.stops
+                      .map(({ color, stop }) => `${color} ${stop}%`)
+                      .join(", ");
 
-            <FieldSet>
-              <FieldSeparator />
+                    return `linear-gradient(${directionValue}, ${colorStops})`;
+                  };
 
-              <div
-                className="h-48 w-full rounded-lg border shadow-sm"
-                style={{ background: gradientValue }}
-                aria-label="Gradient preview"
-                role="img"
-              />
+                  const gradientStyle = isValid
+                    ? { background: generateCSSGradient() }
+                    : {
+                        background:
+                          "linear-gradient(to right, #8e3dff 0%, #ff3d8e 100%)",
+                      };
 
-              <Field>
-                <FieldLabel htmlFor="gradient-css">CSS output</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    id="gradient-css"
-                    value={cssGradient}
-                    readOnly
-                    aria-label="Generated CSS"
-                  />
+                  return (
+                    <div
+                      className={cn(
+                        "h-48 w-full rounded-lg md:max-w-xs",
+                        !isValid && "opacity-30",
+                      )}
+                      style={gradientStyle}
+                      aria-label="Gradient preview"
+                      role="img"
+                    />
+                  );
+                }}
+              </form.Subscribe>
+            </div>
 
-                  <InputGroupAddon>
-                    <PaletteIcon />
-                  </InputGroupAddon>
+            <FieldGroup>
+              <FieldSet>
+                <form.Subscribe
+                  selector={(state) => ({
+                    values: state.values,
+                    isValid: state.isValid,
+                  })}
+                >
+                  {({ values, isValid }) => {
+                    const generateCSSGradient = () => {
+                      const directionValue =
+                        values.direction === "custom"
+                          ? `${values.degree}deg`
+                          : values.direction;
+                      const colorStops = values.stops
+                        .map(({ color, stop }) => `${color} ${stop}%`)
+                        .join(", ");
 
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label="Copy CSS"
-                      onClick={() => navigator.clipboard.writeText(cssGradient)}
-                    >
-                      <CopyIcon />
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-              </Field>
+                      return `linear-gradient(${directionValue}, ${colorStops})`;
+                    };
 
-              <Button
-                size="lg"
-                className="w-fit mx-auto"
-                onClick={() =>
-                  setStops((currentStops) =>
-                    currentStops.map((stop) => ({
-                      ...stop,
-                      color: randomHexColor(),
-                    })),
-                  )
-                }
-              >
-                <ShuffleIcon />
-                Randomize colors
-              </Button>
-            </FieldSet>
-          </FieldGroup>
+                    const cssGradient = isValid
+                      ? `background: ${generateCSSGradient()};`
+                      : "";
+
+                    const handleRandomizeColors = () => {
+                      const randomizedStops = values.stops.map((stop) => ({
+                        ...stop,
+                        color: randomHexColor(),
+                      }));
+                      form.setFieldValue("stops", randomizedStops);
+                    };
+
+                    return (
+                      <>
+                        <Field aria-disabled={!isValid}>
+                          <InputGroup>
+                            <InputGroupTextarea
+                              id="gradient-css"
+                              value={cssGradient}
+                              readOnly
+                              aria-label="Generated CSS"
+                              className="font-mono text-sm"
+                              disabled={!isValid}
+                            />
+
+                            <InputGroupAddon
+                              align="block-start"
+                              className="border-b"
+                            >
+                              <InputGroupText>
+                                <PaletteIcon />
+                                Generated CSS
+                              </InputGroupText>
+                            </InputGroupAddon>
+                          </InputGroup>
+                        </Field>
+
+                        <ButtonGroup>
+                          <ButtonGroup>
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(cssGradient);
+                              }}
+                              disabled={!isValid}
+                            >
+                              <CopyIcon />
+                              Copy CSS
+                            </Button>
+                          </ButtonGroup>
+
+                          <ButtonGroup>
+                            <Button
+                              onClick={handleRandomizeColors}
+                              disabled={!isValid}
+                              variant="outline"
+                            >
+                              <ShuffleIcon />
+                              Randomize colors
+                            </Button>
+                          </ButtonGroup>
+                        </ButtonGroup>
+                      </>
+                    );
+                  }}
+                </form.Subscribe>
+              </FieldSet>
+            </FieldGroup>
+          </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }
