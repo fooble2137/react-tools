@@ -1,9 +1,9 @@
 # Tools
 
 ![MIT License](https://img.shields.io/badge/License-MIT-a6da95?style=for-the-badge&labelColor=363a4f)
-![Version too-2.0](https://img.shields.io/badge/Version-too--2.0-f5a97f?style=for-the-badge&labelColor=363a4f)
+![Version too-3.0](https://img.shields.io/badge/Version-too--3.0-f5a97f?style=for-the-badge&labelColor=363a4f)
 
-A lightweight collection of browser-based utilities designed for generating and converting everyday digital assets. Built with React, Vite and TanStack Router, each tool is designed to run directly in the browser, eliminating the need for a backend.
+A collection of browser-based utilities designed for generating and converting everyday digital assets. Built with React, Vite and TanStack Router, each tool is designed to run directly in the browser, eliminating the need for a backend.
 
 ## Overview
 
@@ -62,7 +62,3 @@ Convert a given date and time to different time zones.
 - `src/routes`: screens for each tool
 - `src/lib`: utility logic for QR, gradient, password, and timezone features
 - `src/components`: reusable UI building blocks
-
-## Notes
-
-This project has been designed to be simple and client-side only. This makes it easy to add new utilities in the future without introducing unnecessary complexity to the backend.
