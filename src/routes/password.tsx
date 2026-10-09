@@ -66,7 +66,7 @@ export const Route = createFileRoute("/password")({
 });
 
 const formSchema = z.object({
-  length: z.number().min(4).max(64),
+  length: z.number().min(4).max(32),
 
   lowercase: z.boolean(),
   uppercase: z.boolean(),
@@ -182,7 +182,7 @@ function PasswordGeneratorRoute() {
                                 field.handleChange(value as number)
                               }
                               aria-invalid={isInvalid}
-                              max={64}
+                              max={32}
                               min={4}
                               step={1}
                             />
