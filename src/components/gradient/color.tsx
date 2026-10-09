@@ -45,12 +45,14 @@ const ColorStop = ({
 
       <ButtonGroup>
         <Popover>
-          <PopoverTrigger render={<InputGroup className="min-w-32" />}>
+          <PopoverTrigger
+            render={<InputGroup className="min-w-32" />}
+            nativeButton={false}
+          >
             <InputGroupInput
               id={colorField.name}
               name={colorField.name}
               value={colorField.state.value}
-              onBlur={colorField.handleBlur}
               onChange={(e) => colorField.handleChange(e.target.value)}
               aria-invalid={colorFieldIsInvalid}
               placeholder="#ffffff"

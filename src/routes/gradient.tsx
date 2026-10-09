@@ -138,6 +138,7 @@ function GradientGeneratorRoute() {
             src="/assets/gradient/text.png"
             className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
+            alt="Gradient generator"
           />
           <h1 className="sr-only">Gradient generator</h1>
 

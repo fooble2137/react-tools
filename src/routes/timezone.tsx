@@ -1,48 +1,20 @@
 import { Button } from "#/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldSet,
-} from "#/components/ui/field";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "#/components/ui/popover";
+import { FieldGroup, FieldSet } from "#/components/ui/field";
 import { useForm } from "@tanstack/react-form";
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import z from "zod";
 import { format } from "date-fns";
 import {
   ArrowDownIcon,
   ArrowsDownUpIcon,
-  CaretDownIcon,
-  ClockIcon,
-  GlobeIcon,
+  DotsThreeOutlineIcon,
+  SunHorizonIcon,
 } from "@phosphor-icons/react";
-import { Calendar } from "#/components/ui/calendar";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "#/components/ui/input-group";
-import {
-  Combobox,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxList,
-} from "#/components/ui/combobox";
 import {
   getTimezoneLabels,
-  getTimezonesFromCSV,
+  getTimezones,
   labelToTimezone,
-  type Timezone,
 } from "#/lib/timezone";
 import { generateHeadMeta } from "#/lib/head";
 import {
@@ -50,6 +22,31 @@ import {
   fromZonedTime,
   getTimezoneOffset,
 } from "date-fns-tz";
+import { Alert, AlertDescription, AlertTitle } from "#/components/ui/alert";
+import { SidebarTrigger } from "#/components/ui/sidebar";
+import { Separator } from "#/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "#/components/ui/breadcrumb";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "#/components/ui/accordion";
+import { ButtonGroup } from "#/components/ui/button-group";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "#/components/ui/collapsible";
+import TimeSettings from "#/components/timezone/time";
+import TimezoneSelect from "#/components/timezone/timezone";
 
 export const Route = createFileRoute("/timezone")({
   head: () => ({
@@ -129,296 +126,189 @@ const convertDateTime = (
 };
 
 function TimezoneConverterRoute() {
-  const [timezones, setTimezones] = useState<Timezone[]>([]);
-  const [timezoneError, setTimezoneError] = useState<string | null>(null);
+  const timezones = useMemo(getTimezones, []);
   const timezoneLabels = useMemo(
     () => getTimezoneLabels(timezones),
     [timezones],
   );
 
-  useEffect(() => {
-    getTimezonesFromCSV()
-      .then(setTimezones)
-      .catch((error: unknown) => {
-        setTimezoneError(
-          error instanceof Error
-            ? error.message
-            : "Unable to load timezone list",
-        );
-      });
-  }, []);
-
   const form = useForm({
     defaultValues: {
       date: new Date(),
       time: format(new Date(), "HH:mm"),
-      fromTimezone:
-        "Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna (UTC+02:00)",
-      toTimezone: "Eastern Time US and Canada (UTC-04:00)",
+      fromTimezone: "Europe/Berlin (UTC+01:00)",
+      toTimezone: "America/New_York (UTC-05:00)",
     },
     validators: {
       onChange: createFormSchema(timezoneLabels),
     },
   });
 
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-
   return (
     <>
-      <style>
-        {`body {
-          background-color: #0f766e;
-        }`}
-      </style>
+      <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
 
-      <main className="sm:max-w-fit max-w-full w-full mx-auto sm:px-5 sm:mt-10 overflow-hidden timezone">
-        <div className="bg-background mx-auto max-w-3xl md:w-fit w-full p-4 lg:p-8 sm:rounded-md shadow-md sm:h-fit sm:min-h-0 min-h-dvh h-full md:mb-10 mb-0">
+          <div className="mr-2 flex">
+            <Separator orientation="vertical" className="h-4" />
+          </div>
+
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink render={<Link to="/" />}>Tools</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem className="hidden md:block">
+                Time & Date
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Timezone converter</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </header>
+
+      <div className="p-4 pt-0 timezone">
+        <div className="mx-auto max-w-4xl w-full">
           <img
             src="/assets/timezone/text.png"
-            className="h-12 w-auto mx-auto mb-4 lg:mb-8"
+            className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
+            alt="Timezone converter"
           />
           <h1 className="sr-only">Timezone converter</h1>
-          {timezoneError && (
-            <p className="mb-4 text-center text-sm text-destructive">
-              {timezoneError}
-            </p>
-          )}
 
-          <div className="sm:min-w-md">
-            <FieldGroup className="w-full">
-              <FieldSet className="flex-row">
-                <form.Field
-                  name="date"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+          <FieldGroup className="w-full">
+            <Accordion className="gap-2" defaultValue={["timezones"]} multiple>
+              <AccordionItem value="date">
+                <AccordionTrigger>Time & Date</AccordionTrigger>
 
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Date</FieldLabel>
-                        <Popover
-                          open={datePickerOpen}
-                          onOpenChange={setDatePickerOpen}
-                        >
-                          <PopoverTrigger
+                <AccordionContent className="pb-4">
+                  <FieldSet className="ml-4 mr-2">
+                    <form.Field
+                      name="date"
+                      children={(dateField) => (
+                        <form.Field
+                          name="time"
+                          children={(timeField) => (
+                            <TimeSettings
+                              dateField={dateField}
+                              timeField={timeField}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </FieldSet>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="timezones">
+                <AccordionTrigger>Timezones</AccordionTrigger>
+
+                <AccordionContent className="pb-4">
+                  <FieldSet className="ml-4 mr-2 flex-row">
+                    <form.Field
+                      name="fromTimezone"
+                      children={(field) => (
+                        <TimezoneSelect
+                          timezoneField={field}
+                          timezoneLabels={timezoneLabels}
+                        />
+                      )}
+                    />
+
+                    <form.Field
+                      name="toTimezone"
+                      children={(field) => (
+                        <TimezoneSelect
+                          timezoneField={field}
+                          timezoneLabels={timezoneLabels}
+                        />
+                      )}
+                    />
+                  </FieldSet>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <Alert>
+              <SunHorizonIcon />
+              <AlertTitle>Daylight saving time</AlertTitle>
+              <AlertDescription>
+                Converting time zones does not take daylight saving time into
+                account. If daylight saving time is in effect in either time
+                zone, you may need to adjust the time manually.
+              </AlertDescription>
+            </Alert>
+
+            <form.Subscribe
+              selector={(state) => ({
+                values: state.values,
+                isValid: state.isValid,
+              })}
+            >
+              {({ values, isValid }) => {
+                const { date, time, fromTimezone, toTimezone } = values;
+                const sourceTimezone = labelToTimezone(fromTimezone, timezones);
+                const targetTimezone = labelToTimezone(toTimezone, timezones);
+                const conversion =
+                  isValid && sourceTimezone && targetTimezone
+                    ? convertDateTime(
+                        date,
+                        time,
+                        sourceTimezone,
+                        targetTimezone,
+                      )
+                    : null;
+
+                if (conversion && sourceTimezone && targetTimezone) {
+                  return (
+                    <>
+                      <Collapsible className="mt-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <p className="text-center text-xl font-mono">
+                            {conversion.target}
+                          </p>
+
+                          <CollapsibleTrigger
                             render={
                               <Button
-                                variant="outline"
-                                id="date-picker-optional"
-                                className="w-32 justify-between font-normal"
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Show conversion details"
                               >
-                                {field.state.value
-                                  ? format(field.state.value, "PPP")
-                                  : "Select date"}
-                                <CaretDownIcon data-icon="inline-end" />
+                                <DotsThreeOutlineIcon />
                               </Button>
                             }
                           />
-                          <PopoverContent
-                            className="w-auto overflow-hidden p-0"
-                            align="start"
-                          >
-                            <Calendar
-                              startMonth={new Date(1900, 0)}
-                              endMonth={new Date(2100, 0)}
-                              mode="single"
-                              selected={field.state.value}
-                              captionLayout="dropdown"
-                              defaultMonth={field.state.value}
-                              onSelect={(date) => {
-                                field.setValue(date || new Date());
-                                setDatePickerOpen(false);
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
+                        </div>
 
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                        <CollapsibleContent className="flex flex-col items-center text-sm text-muted-foreground gap-1 mt-2">
+                          <span>
+                            {conversion.source} ({sourceTimezone})
+                          </span>
 
-                <form.Field
-                  name="time"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
+                          <ArrowDownIcon className="size-3" />
 
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Time</FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            id={field.name}
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            placeholder="Select time"
-                            autoComplete="off"
-                            type="time"
-                            className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                          />
+                          <span>
+                            {conversion.target} ({targetTimezone})
+                          </span>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </>
+                  );
+                }
+              }}
+            </form.Subscribe>
 
-                          <InputGroupAddon>
-                            <ClockIcon />
-                          </InputGroupAddon>
-                        </InputGroup>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-
-              <FieldSet>
-                <form.Field
-                  name="fromTimezone"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          From timezone
-                        </FieldLabel>
-                        <Combobox
-                          items={timezoneLabels}
-                          onInputValueChange={field.handleChange}
-                          value={field.state.value}
-                        >
-                          <ComboboxInput placeholder="Select a timezone">
-                            <InputGroupAddon>
-                              <GlobeIcon />
-                            </InputGroupAddon>
-                          </ComboboxInput>
-                          <ComboboxContent>
-                            <ComboboxEmpty>No timezones found.</ComboboxEmpty>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item} value={item}>
-                                  {item}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                          </ComboboxContent>
-                        </Combobox>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="toTimezone"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          To timezone
-                        </FieldLabel>
-                        <Combobox
-                          items={timezoneLabels}
-                          onInputValueChange={field.handleChange}
-                          value={field.state.value}
-                        >
-                          <ComboboxInput placeholder="Select a timezone">
-                            <InputGroupAddon>
-                              <GlobeIcon />
-                            </InputGroupAddon>
-                          </ComboboxInput>
-                          <ComboboxContent>
-                            <ComboboxEmpty>No timezones found.</ComboboxEmpty>
-                            <ComboboxList>
-                              {(item) => (
-                                <ComboboxItem key={item} value={item}>
-                                  {item}
-                                </ComboboxItem>
-                              )}
-                            </ComboboxList>
-                          </ComboboxContent>
-                        </Combobox>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-              </FieldSet>
-
-              <FieldSet>
-                <FieldSeparator />
-
-                <form.Subscribe
-                  selector={(state) => ({
-                    values: state.values,
-                    isValid: state.isValid,
-                  })}
-                >
-                  {({ values, isValid }) => {
-                    const { date, time, fromTimezone, toTimezone } = values;
-                    const sourceTimezone = labelToTimezone(
-                      fromTimezone,
-                      timezones,
-                    );
-                    const targetTimezone = labelToTimezone(
-                      toTimezone,
-                      timezones,
-                    );
-                    const conversion =
-                      isValid && sourceTimezone && targetTimezone
-                        ? convertDateTime(
-                            date,
-                            time,
-                            sourceTimezone,
-                            targetTimezone,
-                          )
-                        : null;
-
-                    if (conversion && sourceTimezone && targetTimezone) {
-                      return (
-                        <>
-                          <p className="text-center font-medium font-mono">
-                            {conversion.target}
-                          </p>
-                          <FieldSeparator />
-                          <div className="flex flex-col items-center text-sm text-muted-foreground gap-1">
-                            <span>
-                              {conversion.source} ({sourceTimezone})
-                            </span>
-
-                            <ArrowDownIcon className="size-3" />
-
-                            <span>
-                              {conversion.target} ({targetTimezone})
-                            </span>
-                          </div>
-                        </>
-                      );
-                    }
-                  }}
-                </form.Subscribe>
-
+            <ButtonGroup>
+              <ButtonGroup>
                 <Button
-                  size="lg"
-                  className="w-fit mx-auto"
                   onClick={() => {
                     const fromTimezone = form.getFieldValue("fromTimezone");
                     const toTimezone = form.getFieldValue("toTimezone");
@@ -430,11 +320,11 @@ function TimezoneConverterRoute() {
                   <ArrowsDownUpIcon />
                   Switch timezones
                 </Button>
-              </FieldSet>
-            </FieldGroup>
-          </div>
+              </ButtonGroup>
+            </ButtonGroup>
+          </FieldGroup>
         </div>
-      </main>
+      </div>
     </>
   );
 }

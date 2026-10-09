@@ -1,7 +1,6 @@
 "use client";
 
 import Color from "color";
-import { PipetteIcon } from "lucide-react";
 import { Slider } from "radix-ui";
 import {
   type ComponentProps,
@@ -25,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { PencilSimpleIcon } from "@phosphor-icons/react";
 
 type ColorPickerContextValue = {
   hue: number;
@@ -74,9 +74,7 @@ export const ColorPicker = ({
   const [saturation, setSaturation] = useState(
     initialColor.saturationl() ?? 100,
   );
-  const [lightness, setLightness] = useState(
-    initialColor.lightness() ?? 50,
-  );
+  const [lightness, setLightness] = useState(initialColor.lightness() ?? 50);
   const [alpha, setAlpha] = useState(initialColor.alpha() * 100);
   const [mode, setMode] = useState("hex");
   const lastEmittedColor = useRef<string | undefined>(undefined);
@@ -306,7 +304,7 @@ export const ColorPickerEyeDropper = ({
       variant="outline"
       {...props}
     >
-      <PipetteIcon size={16} />
+      <PencilSimpleIcon size={16} />
     </Button>
   );
 };

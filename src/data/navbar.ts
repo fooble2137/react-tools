@@ -50,7 +50,7 @@ export const navbarItems: {
     name: "Time & Date",
     items: [
       {
-        label: "Timezones",
+        label: "Timezone converter",
         name: "timezone",
         icon: ClockIcon,
         href: "/timezone",

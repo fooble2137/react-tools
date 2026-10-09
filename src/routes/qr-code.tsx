@@ -165,6 +165,7 @@ function QRCodeRoute() {
             src="/assets/qr/text.png"
             className="h-16 w-auto mx-auto mb-4 lg:mb-8"
             aria-hidden="true"
+            alt="QR Code generator"
           />
           <h1 className="sr-only">QR Code generator</h1>
 
